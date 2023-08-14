@@ -9,15 +9,15 @@ public class Vec3 {
 	public float x, y, z;
 	
 	public Vec3(float xx, float yy, float zz) {
-	  x = xx;
-	  y = yy;
-	  z = zz;
+        x = xx;
+        y = yy;
+        z = zz;
 	}
 	
 	public Vec3(Vector3 vec) {
-	  x = vec.x;
-	  y = vec.y;
-	  z = vec.z;
+        x = vec.x;
+        y = vec.y;
+        z = vec.z;
 	}
 	
 }
@@ -39,11 +39,9 @@ public class WorldVersion {
 [System.Serializable]
 public class SettingsMenu {
 	
-	
 	public int   RenderDistance;
 	public float StaticDistance;
 	public float EntityDistance;
-	
 	
 }
 
@@ -67,6 +65,7 @@ public class WorldData {
 	
 	// World settings
 	public bool doDayNightCycle;
+	public bool doWeatherCycle;
 	
 	public int TickRate;
 	public int TickCounter; // World up time
@@ -76,8 +75,8 @@ public class WorldData {
 	public int[]     inv_count     = new int[8];
 	public int       inv_selector;
 	
-	
 }
+
 
 
 
@@ -90,7 +89,7 @@ public class ChunkData {
 	public int        biome;
 	
 	// Terrain grid layout
-	//public float[,]   vertexGrid;
+	public float[,]   vertexGrid;
 	public Vec3[,]    colorGrid;
 	
 	// Static chunk objects
@@ -119,9 +118,11 @@ public class ChunkData {
 	public bool[]     useAI;
 	
 	
-	
+	//
 	// AI
-	public float[] chanceChangeDirection;
+	//
+	
+	public float[] chanceToChangeDirection;
 	public float[] chanceToWalk;
 	public float[] chanceToFocusOnPlayer;
 	public float[] chanceToFocusOnEntity;
@@ -132,21 +133,31 @@ public class ChunkData {
 	public float[] distanceToAttackPlayer;
 	public float[] distanceToWalk;
     
-	public float[] heightPreferenceMin;
+    public float[] heightPreferenceMin;
 	public float[] heightPreferenceMax;
     
 	public float[] distanceToAttack;
 	public float[] distanceToFlee;
     
+    // Emotional state
+    public int[] love;
+	public int[] fear;
+	public int[] stress;
+	public int[] hunger;
+	
     // Animation
+	public int[]   limbAxis;
+	public bool[]  limbAxisInvert;
 	public float[] limbCycleRate;
 	public float[] limbCycleRange;
 	
-	public int[]   consumtionTimer;
+	public int[]   consumptionTimer;
 	
 	
-	
+	//
 	// Genetic expression
+	//
+	
 	public float[] AdultSizeMul;
 	
 	public Vec3[]  BodyO;
@@ -188,105 +199,113 @@ public class ChunkData {
 	
 	
 	public ChunkData(int static_count, int dynamic_count) {
-	  
-	  // Chunk biome type
-	  biome           = 0;
-	  
-	  // Terrain grid array
-	  //vertexGrid      = new float[101, 101];
-	  colorGrid       = new Vec3[101, 101];
-	  
-	  // Static objects
-	  staticCount     = static_count;
-	  staticName      = new string[staticCount];
-	  
-	  staticPosition  = new Vec3[staticCount];
-	  staticRotation  = new Vec3[staticCount];
-	  staticScale     = new Vec3[staticCount];
-	  
-	  
-	  // Dynamic entities
-	  entityCount     = dynamic_count;
-	  entityName      = new string[entityCount];
-	  
-	  entityPosition  = new Vec3[entityCount];
-	  entityRotation  = new Vec3[entityCount];
-	  
-	  Health          = new float[entityCount];
-	  Armor           = new float[entityCount];
-	  
-	  Age             = new int[entityCount];
-	  Team            = new int[entityCount];
-	  Speed           = new float[entityCount];
-	  
-	  isGenetic       = new bool[entityCount];
-	  useAI           = new bool[entityCount];
-	  
-	  
-	  // AI
-	  chanceChangeDirection   = new float[entityCount];
-      chanceToWalk            = new float[entityCount];
-      chanceToFocusOnPlayer   = new float[entityCount];
-      chanceToFocusOnEntity   = new float[entityCount];
-      chanceToAttackPlayer    = new float[entityCount];
-      
-      distanceToFocusOnPlayer = new float[entityCount];
-      distanceToFocusOnEntity = new float[entityCount];
-      distanceToAttackPlayer  = new float[entityCount];
-      distanceToWalk          = new float[entityCount];
-      
-      heightPreferenceMin     = new float[entityCount];
-      heightPreferenceMax     = new float[entityCount];
-      
-      distanceToAttack        = new float[entityCount];
-      distanceToFlee          = new float[entityCount];
-      
-      // Animation
-      limbCycleRate           = new float[entityCount];
-      limbCycleRange          = new float[entityCount];
-      
-      consumtionTimer         = new int[entityCount];
-      
-      
-	  
-	  // Entity genetic expression
-	  AdultSizeMul   = new float[entityCount];
-	  
-	  BodyO      = new Vec3[entityCount];
-	  HeadO      = new Vec3[entityCount];
-	  LimbFLO    = new Vec3[entityCount];
-	  LimbFRO    = new Vec3[entityCount];
-	  LimbRLO    = new Vec3[entityCount];
-	  LimbRRO    = new Vec3[entityCount];
-	  
-	  BodyP      = new Vec3[entityCount];
-	  HeadP      = new Vec3[entityCount];
-	  LimbFLP    = new Vec3[entityCount];
-	  LimbFRP    = new Vec3[entityCount];
-	  LimbRLP    = new Vec3[entityCount];
-	  LimbRRP    = new Vec3[entityCount];
-	  
-	  BodyR      = new Vec3[entityCount];
-	  HeadR      = new Vec3[entityCount];
-	  LimbFLR    = new Vec3[entityCount];
-	  LimbFRR    = new Vec3[entityCount];
-	  LimbRLR    = new Vec3[entityCount];
-	  LimbRRR    = new Vec3[entityCount];
-	  
-	  BodyS      = new Vec3[entityCount];
-	  HeadS      = new Vec3[entityCount];
-	  LimbFLS    = new Vec3[entityCount];
-	  LimbFRS    = new Vec3[entityCount];
-	  LimbRLS    = new Vec3[entityCount];
-	  LimbRRS    = new Vec3[entityCount];
-	  
-	  BodyC      = new Vec3[entityCount];
-	  HeadC      = new Vec3[entityCount];
-	  LimbFLC    = new Vec3[entityCount];
-	  LimbFRC    = new Vec3[entityCount];
-	  LimbRLC    = new Vec3[entityCount];
-	  LimbRRC    = new Vec3[entityCount];
-	  
+        
+        // Chunk biome type
+        biome           = 0;
+        
+        // Terrain grid array
+        vertexGrid      = new float[101, 101];
+        colorGrid       = new Vec3 [101, 101];
+        
+        // Static objects
+        staticCount     = static_count;
+        staticName      = new string[staticCount];
+        
+        staticPosition  = new Vec3[staticCount];
+        staticRotation  = new Vec3[staticCount];
+        staticScale     = new Vec3[staticCount];
+        
+        
+        // Dynamic entities
+        entityCount     = dynamic_count;
+        entityName      = new string[entityCount];
+        
+        entityPosition  = new Vec3[entityCount];
+        entityRotation  = new Vec3[entityCount];
+        
+        Health          = new float[entityCount];
+        Armor           = new float[entityCount];
+        
+        Age             = new int[entityCount];
+        Team            = new int[entityCount];
+        Speed           = new float[entityCount];
+        
+        isGenetic       = new bool[entityCount];
+        useAI           = new bool[entityCount];
+        
+        
+        // AI
+        chanceToChangeDirection = new float[entityCount];
+        chanceToWalk            = new float[entityCount];
+        chanceToFocusOnPlayer   = new float[entityCount];
+        chanceToFocusOnEntity   = new float[entityCount];
+        chanceToAttackPlayer    = new float[entityCount];
+        
+        distanceToFocusOnPlayer = new float[entityCount];
+        distanceToFocusOnEntity = new float[entityCount];
+        distanceToAttackPlayer  = new float[entityCount];
+        distanceToWalk          = new float[entityCount];
+        
+        heightPreferenceMin     = new float[entityCount];
+        heightPreferenceMax     = new float[entityCount];
+        
+        distanceToAttack        = new float[entityCount];
+        distanceToFlee          = new float[entityCount];
+        
+        // Emotional state
+        love                    = new int[entityCount];
+        fear                    = new int[entityCount];
+        stress                  = new int[entityCount];
+        hunger                  = new int[entityCount];
+        
+        
+        // Animation
+        limbAxis                = new int[entityCount];
+        limbAxisInvert          = new bool[entityCount];
+        limbCycleRate           = new float[entityCount];
+        limbCycleRange          = new float[entityCount];
+        
+        consumptionTimer         = new int[entityCount];
+        
+        
+        // Entity genetic expression
+        AdultSizeMul   = new float[entityCount];
+        
+        BodyO      = new Vec3[entityCount];
+        HeadO      = new Vec3[entityCount];
+        LimbFLO    = new Vec3[entityCount];
+        LimbFRO    = new Vec3[entityCount];
+        LimbRLO    = new Vec3[entityCount];
+        LimbRRO    = new Vec3[entityCount];
+        
+        BodyP      = new Vec3[entityCount];
+        HeadP      = new Vec3[entityCount];
+        LimbFLP    = new Vec3[entityCount];
+        LimbFRP    = new Vec3[entityCount];
+        LimbRLP    = new Vec3[entityCount];
+        LimbRRP    = new Vec3[entityCount];
+        
+        BodyR      = new Vec3[entityCount];
+        HeadR      = new Vec3[entityCount];
+        LimbFLR    = new Vec3[entityCount];
+        LimbFRR    = new Vec3[entityCount];
+        LimbRLR    = new Vec3[entityCount];
+        LimbRRR    = new Vec3[entityCount];
+        
+        BodyS      = new Vec3[entityCount];
+        HeadS      = new Vec3[entityCount];
+        LimbFLS    = new Vec3[entityCount];
+        LimbFRS    = new Vec3[entityCount];
+        LimbRLS    = new Vec3[entityCount];
+        LimbRRS    = new Vec3[entityCount];
+        
+        BodyC      = new Vec3[entityCount];
+        HeadC      = new Vec3[entityCount];
+        LimbFLC    = new Vec3[entityCount];
+        LimbFRC    = new Vec3[entityCount];
+        LimbRLC    = new Vec3[entityCount];
+        LimbRRC    = new Vec3[entityCount];
+        
 	}
 	
 	
