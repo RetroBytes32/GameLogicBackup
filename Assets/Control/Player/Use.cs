@@ -42,43 +42,41 @@ public class Use : MonoBehaviour {
 	void Update () {
 	  
 	  if (tickUpdate.isPaused) return;
-	  
+	  if (tickUpdate.doShowConsole) return;
 	  
 	  if (useCounter > 0) useCounter--;
-	  
 	  
 	  
 	  if (Input.GetButton("Use")) {
 	    
 	    string slotName = interfaceScript.inventory.checkSlot();
 	    
-	    if (slotName == "meat") {
-	      
-	      if (interfaceScript.inventory.hunger == 10) {
-	        
-	        resetConsumeAnimation();
-	        
-	        return;
-	      }
-	      
-	      runConsumeAnimation = true;
-	      
-	      
-	      if (useCounter == 1) {
-	        
-	        tickUpdate.HealthRecharge = (tickUpdate.inventory.health * 7);
-	        
-	        tickUpdate.inventory.addHunger(2);
-	        tickUpdate.inventory.addSaturation(100);
-	        
-	        tickUpdate.inventory.removeItem();
-	        interfaceScript.updateInHand();
-	      }
-	      
-	    }
-	    
-	    
-	    
+	    for (int i=0; i < tickUpdate.consumableItem.Length; i++) {
+            if (tickUpdate.consumableItem[i].name != slotName) 
+                continue;
+            
+            if (interfaceScript.inventory.hunger == 10) {
+                
+                resetConsumeAnimation();
+                
+                return;
+            }
+            
+            runConsumeAnimation = true;
+            
+            
+            if (useCounter == 1) {
+                
+                tickUpdate.HealthRecharge = (tickUpdate.inventory.health * 7);
+                
+                tickUpdate.inventory.addHunger(tickUpdate.consumableItem[i].hunger);
+                tickUpdate.inventory.addSaturation(tickUpdate.consumableItem[i].saturation);
+                
+                tickUpdate.inventory.removeItem();
+                interfaceScript.updateInHand();
+            }
+            break;
+        }
 	    
 	    
 	    

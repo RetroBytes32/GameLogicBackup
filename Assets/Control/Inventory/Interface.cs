@@ -35,7 +35,6 @@ public class Interface : MonoBehaviour {
 	    if (selectedSlot > 7) selectedSlot = 0;
 	    
 	    setSelection();
-	    
 	  }
 	  
 	  
@@ -47,22 +46,8 @@ public class Interface : MonoBehaviour {
 	    if (selectedSlot < 0) selectedSlot = 7;
 	    
 	    setSelection();
-	    
 	  }
 	  
-	  
-	  //
-	  // Check player death
-	  
-	  if (inventory.health <= 0) {
-	    
-	    inventory.health = 0;
-	    
-	    deathMenu.SetActive(true);
-	    
-	    tickUpdate.pauseGame();
-	    
-	  }
 	  
 	}
 	
@@ -81,24 +66,24 @@ public class Interface : MonoBehaviour {
 	
 	public void RemoveControllers(GameObject gameObject, string Name) {
 	  
+	  // Destroy the first sub object
+	  // This object is reserved for controller scripts and hit boxes
+	  if (gameObject.transform.childCount > 0) 
+        Destroy( gameObject.transform.GetChild(0).gameObject );
+	  
+	  
+	  /*
 	  if (Name == "arrow") {
-	    
 	    Destroy( gameObject.GetComponent<ArrowControl>() );
-	    
 	    gameObject.GetComponent<Rigidbody>().detectCollisions = false;
-	    
 	  }
+	  */
 	  
-	  if (gameObject.transform.childCount > 0) {
-	    
-	    for (int i=0; i < gameObject.transform.childCount; i++) {
-	      
-	      Destroy( gameObject.transform.GetChild(i).gameObject );
-	      
-	    }
-	    
-	  }
-	  
+	  // Destroy all sub objects
+	  //if (gameObject.transform.childCount > 0) {
+	  //  for (int i=0; i < gameObject.transform.childCount; i++) 
+	  //    Destroy( gameObject.transform.GetChild(i).gameObject );
+      
 	  return;
 	}
 	
@@ -122,6 +107,9 @@ public class Interface : MonoBehaviour {
 	  
 	  newObject.layer = LayerMask.NameToLayer("UI");
 	  
+	  for (int i=0; i < newObject.transform.childCount; i++) 
+        newObject.transform.GetChild(i).gameObject.layer = LayerMask.NameToLayer("UI");
+      
 	  // Dummy object: Remove object controllers (if any)
 	  RemoveControllers(newObject, name);
 	  

@@ -4,23 +4,13 @@ using UnityEngine;
 using UnityEngine.UI;
 
 
-[System.Serializable]
-public struct InventoryItem {
-	
-	public string   name;
-	
-	public RawImage image;
-	
-	
-}
-
-
-
-
-
 
 public class Inventory : MonoBehaviour {
 	
+	[Space(10)]
+	[Header("Slot state")]
+	[Space(5)]
+    
 	public bool[]         State = new bool[8];
 	public string[]       Name  = new string[8];
 	public int[]          Stack = new int[8];
@@ -29,9 +19,19 @@ public class Inventory : MonoBehaviour {
 	public RawImage[]     slot_image      = new RawImage[8];
 	public Text[]         slot_count      = new Text[8];
 	
+	
+	[Space(10)]
+	[Header("Health / hunger")]
+	[Space(5)]
+    
 	public GameObject[]   health_image  = new GameObject[10];
 	public GameObject[]   hunger_image  = new GameObject[10];
 	
+	
+	[Space(10)]
+	[Header("Internal state")]
+	[Space(5)]
+    
 	public int     health        = 0;
 	public int     hunger        = 0;
 	public int     saturation    = 0;
@@ -40,7 +40,7 @@ public class Inventory : MonoBehaviour {
 	public int     ImageCounter  = 0;
 	public int     ShakeCounter  = 0;
 	
-	public InventoryItem[]   inventory_items;
+	public TickUpdate tickUpdate;
 	
 	
 	
@@ -186,14 +186,14 @@ public class Inventory : MonoBehaviour {
 	    
 	  }
 	  
-	  for (int i=0; i < inventory_items.Length; i++) {
+	  for (int i=0; i < tickUpdate.items.Length; i++) {
 	    
-	    if (inventory_items[i].name == name) {
+	    if (tickUpdate.items[i].name == name) {
 	      
 	      string FinalCount = Stack[slot].ToString();
 	      if (Stack[slot] < 2) FinalCount = "";
 	      
-	      slot_image[slot].texture = inventory_items[i].image.texture;
+	      slot_image[slot].texture = tickUpdate.items[i].inventoryImage.texture;
 	      slot_count[slot].text = FinalCount;
 	      
 	      break;
@@ -245,7 +245,7 @@ public class Inventory : MonoBehaviour {
 	    Name[i]  = "";
 	    Stack[i] = 0;
 	    
-	    slot_image[i].texture = inventory_items[0].image.texture;
+	    slot_image[i].texture = tickUpdate.items[0].inventoryImage.texture;
 	    slot_count[i].text    = "";
 	    
 	  }
@@ -265,7 +265,7 @@ public class Inventory : MonoBehaviour {
 	    State[slot] = false;
 	    Name[slot]  = "";
 	    
-	    slot_image[slot].texture = inventory_items[0].image.texture;
+	    slot_image[slot].texture = tickUpdate.items[0].inventoryImage.texture;
 	    slot_count[slot].text = "";
 	    
 	    return true;

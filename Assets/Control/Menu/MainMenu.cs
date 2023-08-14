@@ -44,9 +44,13 @@ public class MainMenu : MonoBehaviour {
 	
 	public GameObject RootMenu;
 	
+    public GameObject Panel;
+	public GameObject BackPanel;
+	
 	public GameObject NewWorldMenu;
 	public GameObject LoadWorldMenu;
 	public GameObject SettingsMenu;
+	public GameObject DestroyCheckMenu;
 	
 	public GameObject LoadButton;
 	public GameObject DestroyButton;
@@ -175,19 +179,24 @@ public class MainMenu : MonoBehaviour {
 	  
 	  if (Input.GetKeyDown(KeyCode.Escape)) {
 	    
+	    RootMenu.SetActive(true);
+	    Panel.SetActive(true);
+	    BackPanel.SetActive(true);
 	    
-	    RootMenu.      SetActive(true);
+	    canvasMainMenu.SetActive(true);
 	    
-	    NewWorldMenu.  SetActive(false);
-	    LoadWorldMenu. SetActive(false);
+	    NewWorldMenu.SetActive(false);
+	    LoadWorldMenu.SetActive(false);
 	    
 	    if (SettingsMenu.activeInHierarchy) 
 	      saveSettingsMenu();
-	    SettingsMenu.  SetActive(false);
+        
+	    SettingsMenu.SetActive(false);
 	    
-	    LoadButton.    SetActive(false);
-	    DestroyButton. SetActive(false);
+	    LoadButton.SetActive(false);
+	    DestroyButton.SetActive(false);
 	    
+	    DestroyCheckMenu.SetActive(false);
 	  }
 	  
 	  

@@ -17,7 +17,8 @@ public class MouseLook : MonoBehaviour {
 	
 	void Update () {
 	  
-	  if (tickUpdate.isPaused == true) return;
+	  if (tickUpdate.doMouseLook == false) 
+        return;
 	  
 	  float mouseX = Input.GetAxis("Mouse X") * mouseSensitivityX;
 	  float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivityY;
