@@ -201,31 +201,38 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entityTag: {fileID: 4008786666549160401}
   isActive: 1
-  chanceChangeDirection: 0.05
-  chanceToWalk: 0.07
-  chanceToFocusOnPlayer: 0.2
+  chanceToChangeDirection: 0.1
+  chanceToFocusOnPlayer: 0.13
   chanceToFocusOnEntity: 0.1
   chanceToAttackPlayer: 0
-  distanceToFocusOnPlayer: 10
-  distanceToFocusOnEntity: 10
+  chanceToWalk: 0.09
+  distanceToFocusOnPlayer: 20
+  distanceToFocusOnEntity: 20
   distanceToAttackPlayer: 0
-  distanceToWalk: 30
+  distanceToWalk: 40
   heightPreferenceMin: 0
   heightPreferenceMax: 20
   distanceToAttack: 0
   distanceToFlee: 0
-  EntitiesToAttack: []
-  EntitiesToFlee: []
+  love: 0
+  fear: 0
+  stress: 0
+  hunger: 0
+  memories: 
+  AttackEntities: []
+  FleeFromEntities: []
   DropOnDeath: []
-  cycle_rate: 50
-  walk_range: 20
+  limbAxis: 0
+  limbAxisInvert: 0
+  limbCycleRate: 50
+  limbCycleRange: 20
   isDying: 0
   isInPain: 0
   isRedirecting: 0
   isAttacking: 0
   isFleeing: 0
   isConsuming: 0
-  consumeTimeOut: 20
+  consumptionTimer: 40
   targetEntity: {fileID: 0}
   Head: {fileID: 5821493225949227693}
   Body: {fileID: 4570294137618959883}

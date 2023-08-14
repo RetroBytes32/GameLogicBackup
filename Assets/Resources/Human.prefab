@@ -493,13 +493,6 @@ MonoBehaviour:
   Age: 0
   Team: 0
   Speed: 2
-  isGenetic: 1
-  isWalking: 0
-  isRunning: 0
-  isRotating: 0
-  isFacing: 1
-  isGrounded: 0
-  useAI: 1
   Position: {x: 0, y: 0, z: 0}
   Rotation: {x: 0, y: 0, z: 0}
   Facing: {x: 0, y: 0, z: 0}
@@ -510,6 +503,14 @@ MonoBehaviour:
   HeadSnapSpeed: 5
   BodySnapSpeed: 4.5
   SpeedMultiplier: 2.5
+  isWalking: 0
+  isRunning: 0
+  isRotating: 0
+  isFacing: 1
+  isGrounded: 0
+  isGenetic: 1
+  useAI: 1
+  AttackTimout: 80
   Head: {fileID: 4981983206091496}
   Body: {fileID: 4547529532863078}
   LegLeft: {fileID: 4991899746206706}
@@ -539,29 +540,38 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entityTag: {fileID: 114747961071989228}
   isActive: 1
-  chanceChangeDirection: 0.14
-  chanceToWalk: 0.35
-  chanceToFocusOnPlayer: 0.01
-  chanceToFocusOnEntity: 0.03
+  chanceToChangeDirection: 0.18
+  chanceToFocusOnPlayer: 0.1
+  chanceToFocusOnEntity: 0.1
   chanceToAttackPlayer: 0
+  chanceToWalk: 0.35
   distanceToFocusOnPlayer: 10
   distanceToFocusOnEntity: 10
   distanceToAttackPlayer: 8
   distanceToWalk: 15
+  heightPreferenceMin: 0
+  heightPreferenceMax: 40
   distanceToAttack: 0
   distanceToFlee: 0
-  EntitiesToAttack: []
-  EntitiesToFlee: []
+  love: 0
+  fear: 0
+  stress: 0
+  hunger: 0
+  memories: 
+  AttackEntities: []
+  FleeFromEntities: []
   DropOnDeath: []
-  cycle_rate: 50
-  walk_range: 20
+  limbAxis: 0
+  limbAxisInvert: 0
+  limbCycleRate: 50
+  limbCycleRange: 20
   isDying: 0
   isInPain: 0
   isRedirecting: 0
   isAttacking: 0
   isFleeing: 0
-  deathCounter: 0
-  redirectTimer: 0
+  isConsuming: 0
+  consumptionTimer: 40
   targetEntity: {fileID: 0}
   Head: {fileID: 4981983206091496}
   Body: {fileID: 4547529532863078}
@@ -569,6 +579,10 @@ MonoBehaviour:
   ArmRight: {fileID: 4777192269936718}
   LegLeft: {fileID: 4991899746206706}
   LegRight: {fileID: 4734601818575722}
+  consumeTimer: 0
+  deathCounter: 0
+  redirectTimer: 0
+  changeDirectionCounter: 0
 --- !u!114 &114374960714634188
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -581,6 +595,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9688e1e0dc485d641bc21dc5c29d6d15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gene_string: 
   Body: {fileID: 4547529532863078}
   Neck: {fileID: 4981983206091496}
   LegLeft: {fileID: 4991899746206706}
@@ -618,12 +633,6 @@ MonoBehaviour:
   LimbFRS: {x: 0.125, y: 0.63, z: 0.2}
   LimbRLS: {x: 0.2, y: 0.75, z: 0.225}
   LimbRRS: {x: 0.2, y: 0.75, z: 0.225}
-  BodyD: 0
-  HeadD: 0
-  LimbFLD: 0
-  LimbFRD: 0
-  LimbRLD: 0
-  LimbRRD: 0
   BodyC: {x: 0, y: 0.18, z: 0.08}
   HeadC: {x: 0.8, y: 0.8, z: 0.8}
   LimbFLC: {x: 0.5, y: 0.5, z: 0.5}

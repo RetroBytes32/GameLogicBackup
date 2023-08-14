@@ -414,7 +414,7 @@ MonoBehaviour:
   groundDistance: 0.5
   groundMask:
     serializedVersion: 2
-    m_Bits: 30720
+    m_Bits: 30976
   readyToJump: 0
   jumpTimer: 0
   jumpCoolDown: 2
@@ -821,11 +821,17 @@ MonoBehaviour:
   GroundMask:
     serializedVersion: 2
     m_Bits: 8192
-  AttackTimeout: 3
+  attackTimeout: 7
   attackTimer: 0
   canAttack: 0
   playerAttackDamage: 1
   Distance: 4.5
+  attackAnimationSwingRate: 4
+  attackAnimationRetractRate: 0.24
+  attackCooloffTimer: -0.4
+  attackAnimationX: 1.2
+  attackAnimationY: -0.3
+  attackAnimationZ: 2
 --- !u!114 &8135201595506357587
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -860,11 +866,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DropMask:
     serializedVersion: 2
-    m_Bits: 4096
+    m_Bits: 4352
   GroundMask:
     serializedVersion: 2
     m_Bits: 8192
-  Distance: 4
+  Distance: 5
   HUD: {fileID: 0}
 --- !u!143 &420750604200002037
 CharacterController:

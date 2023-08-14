@@ -39,8 +39,6 @@ public class GeneTag : MonoBehaviour {
 	public float AdultSizeMul;         // Adult body size multiplier
 	
 	
-	// Body position offsets
-	
 	[Space(3)]
 	[Header("Offset")]
 	[Space(10)]
@@ -51,8 +49,6 @@ public class GeneTag : MonoBehaviour {
 	public Vector3 LimbFRO;            // Limb offset front right
 	public Vector3 LimbRLO;            // Limb offset rear left
 	public Vector3 LimbRRO;            // Limb offset rear right
-	
-	// Body position offsets
 	
 	[Space(3)]
 	[Header("Position")]
@@ -65,8 +61,6 @@ public class GeneTag : MonoBehaviour {
 	public Vector3 LimbRLP;            // Limb position rear left
 	public Vector3 LimbRRP;            // Limb position rear right
 	
-	// Body rotation values
-	
 	[Space(3)]
 	[Header("Rotation")]
 	[Space(10)]
@@ -78,8 +72,6 @@ public class GeneTag : MonoBehaviour {
 	public Vector3 LimbRLR;            // Limb rear left orientation
 	public Vector3 LimbRRR;            // Limb rear right orientation
 	
-	// Body scale factors
-	
 	[Space(3)]
 	[Header("Scale")]
 	[Space(10)]
@@ -90,8 +82,6 @@ public class GeneTag : MonoBehaviour {
 	public Vector3 LimbFRS;            // Limb front right scale
 	public Vector3 LimbRLS;            // Limb rear left scale
 	public Vector3 LimbRRS;            // Limb rear right scale
-	
-	// Body color varients
 	
 	[Space(3)]
 	[Header("Color")]
@@ -164,62 +154,77 @@ public class GeneTag : MonoBehaviour {
 	
 	
 	
-	public void mergeGenetics(GeneTag m_Gene, GeneTag p_Gene, float bias) {
+	public void exportGene() {
         
-        float tolerance = 0.3f;
+	}
+	
+	
+	
+	public void importGene() {
+        
+	}
+	
+	
+	
+	
+	
+	
+	
+	public void mergeGenetics(GeneTag m_Gene, GeneTag p_Gene) {
+        
+        float tolerance = 8f;
         
         // Initial chance for significant genetic change
-        float biasTotal = bias;
         
-        biasTotal = bias + (Random.Range(0.0f, tolerance) - Random.Range(0.0f, tolerance));
+        float bias = (Random.Range(0f, tolerance) - Random.Range(0f, tolerance));
         
         // Offset
-        BodyO   = Vector3.Lerp(m_Gene.BodyO,   p_Gene.BodyO,   biasTotal);
-        HeadO   = Vector3.Lerp(m_Gene.HeadO,   p_Gene.HeadO,   biasTotal);
-        LimbFLO = Vector3.Lerp(m_Gene.LimbFLO, p_Gene.LimbFLO, biasTotal);
-        LimbFRO = Vector3.Lerp(m_Gene.LimbFRO, p_Gene.LimbFRO, biasTotal);
-        LimbRLO = Vector3.Lerp(m_Gene.LimbRLO, p_Gene.LimbRLO, biasTotal);
-        LimbRRO = Vector3.Lerp(m_Gene.LimbRRO, p_Gene.LimbRRO, biasTotal);
+        BodyO   = Vector3.Lerp(m_Gene.BodyO,   p_Gene.BodyO,   bias);
+        HeadO   = Vector3.Lerp(m_Gene.HeadO,   p_Gene.HeadO,   bias);
+        LimbFLO = Vector3.Lerp(m_Gene.LimbFLO, p_Gene.LimbFLO, bias);
+        LimbFRO = Vector3.Lerp(m_Gene.LimbFRO, p_Gene.LimbFRO, bias);
+        LimbRLO = Vector3.Lerp(m_Gene.LimbRLO, p_Gene.LimbRLO, bias);
+        LimbRRO = Vector3.Lerp(m_Gene.LimbRRO, p_Gene.LimbRRO, bias);
         
-        biasTotal = bias + (Random.Range(0.0f, tolerance) - Random.Range(0.0f, tolerance));
+        bias = (Random.Range(0f, tolerance) - Random.Range(0f, tolerance));
         
         // Position
-        BodyP   = Vector3.Lerp(m_Gene.BodyP,   p_Gene.BodyP,   biasTotal);
-        HeadP   = Vector3.Lerp(m_Gene.HeadP,   p_Gene.HeadP,   biasTotal);
-        LimbFLP = Vector3.Lerp(m_Gene.LimbFLP, p_Gene.LimbFLP, biasTotal);
-        LimbFRP = Vector3.Lerp(m_Gene.LimbFRP, p_Gene.LimbFRP, biasTotal);
-        LimbRLP = Vector3.Lerp(m_Gene.LimbRLP, p_Gene.LimbRLP, biasTotal);
-        LimbRRP = Vector3.Lerp(m_Gene.LimbRRP, p_Gene.LimbRRP, biasTotal);
+        BodyP   = Vector3.Lerp(m_Gene.BodyP,   p_Gene.BodyP,   bias);
+        HeadP   = Vector3.Lerp(m_Gene.HeadP,   p_Gene.HeadP,   bias);
+        LimbFLP = Vector3.Lerp(m_Gene.LimbFLP, p_Gene.LimbFLP, bias);
+        LimbFRP = Vector3.Lerp(m_Gene.LimbFRP, p_Gene.LimbFRP, bias);
+        LimbRLP = Vector3.Lerp(m_Gene.LimbRLP, p_Gene.LimbRLP, bias);
+        LimbRRP = Vector3.Lerp(m_Gene.LimbRRP, p_Gene.LimbRRP, bias);
         
-        biasTotal = bias + (Random.Range(0.0f, tolerance) - Random.Range(0.0f, tolerance));
+        bias = (Random.Range(0f, tolerance) - Random.Range(0f, tolerance));
         
         // Rotation
-        BodyR   = Vector3.Lerp(m_Gene.BodyR,   p_Gene.BodyR,   biasTotal);
-        HeadR   = Vector3.Lerp(m_Gene.HeadR,   p_Gene.HeadR,   biasTotal);
-        LimbFLR = Vector3.Lerp(m_Gene.LimbFLR, p_Gene.LimbFLR, biasTotal);
-        LimbFRR = Vector3.Lerp(m_Gene.LimbFRR, p_Gene.LimbFRR, biasTotal);
-        LimbRLR = Vector3.Lerp(m_Gene.LimbRLR, p_Gene.LimbRLR, biasTotal);
-        LimbRRR = Vector3.Lerp(m_Gene.LimbRRR, p_Gene.LimbRRR, biasTotal);
+        BodyR   = Vector3.Lerp(m_Gene.BodyR,   p_Gene.BodyR,   bias);
+        HeadR   = Vector3.Lerp(m_Gene.HeadR,   p_Gene.HeadR,   bias);
+        LimbFLR = Vector3.Lerp(m_Gene.LimbFLR, p_Gene.LimbFLR, bias);
+        LimbFRR = Vector3.Lerp(m_Gene.LimbFRR, p_Gene.LimbFRR, bias);
+        LimbRLR = Vector3.Lerp(m_Gene.LimbRLR, p_Gene.LimbRLR, bias);
+        LimbRRR = Vector3.Lerp(m_Gene.LimbRRR, p_Gene.LimbRRR, bias);
         
-        biasTotal = bias + (Random.Range(0.0f, tolerance) - Random.Range(0.0f, tolerance));
+        bias = (Random.Range(0f, tolerance) - Random.Range(0f, tolerance));
         
         // Scale
-        BodyS   = Vector3.Lerp(m_Gene.BodyS,   p_Gene.BodyS,   biasTotal);
-        HeadS   = Vector3.Lerp(m_Gene.HeadS,   p_Gene.HeadS,   biasTotal);
-        LimbFLS = Vector3.Lerp(m_Gene.LimbFLS, p_Gene.LimbFLS, biasTotal);
-        LimbFRS = Vector3.Lerp(m_Gene.LimbFRS, p_Gene.LimbFRS, biasTotal);
-        LimbRLS = Vector3.Lerp(m_Gene.LimbRLS, p_Gene.LimbRLS, biasTotal);
-        LimbRRS = Vector3.Lerp(m_Gene.LimbRRS, p_Gene.LimbRRS, biasTotal);
+        BodyS   = Vector3.Lerp(m_Gene.BodyS,   p_Gene.BodyS,   bias);
+        HeadS   = Vector3.Lerp(m_Gene.HeadS,   p_Gene.HeadS,   bias);
+        LimbFLS = Vector3.Lerp(m_Gene.LimbFLS, p_Gene.LimbFLS, bias);
+        LimbFRS = Vector3.Lerp(m_Gene.LimbFRS, p_Gene.LimbFRS, bias);
+        LimbRLS = Vector3.Lerp(m_Gene.LimbRLS, p_Gene.LimbRLS, bias);
+        LimbRRS = Vector3.Lerp(m_Gene.LimbRRS, p_Gene.LimbRRS, bias);
         
-        biasTotal = bias + (Random.Range(0.0f, tolerance) - Random.Range(0.0f, tolerance));
+        bias = (Random.Range(0f, tolerance) - Random.Range(0f, tolerance));
         
         // Color
-        BodyC   = Vector3.Lerp(m_Gene.BodyC,   p_Gene.BodyC,   biasTotal);
-        HeadC   = Vector3.Lerp(m_Gene.HeadC,   p_Gene.HeadC,   biasTotal);
-        LimbFLC = Vector3.Lerp(m_Gene.LimbFLC, p_Gene.LimbFLC, biasTotal);
-        LimbFRC = Vector3.Lerp(m_Gene.LimbFRC, p_Gene.LimbFRC, biasTotal);
-        LimbRLC = Vector3.Lerp(m_Gene.LimbRLC, p_Gene.LimbRLC, biasTotal);
-        LimbRRC = Vector3.Lerp(m_Gene.LimbRRC, p_Gene.LimbRRC, biasTotal);
+        BodyC   = Vector3.Lerp(m_Gene.BodyC,   p_Gene.BodyC,   bias);
+        HeadC   = Vector3.Lerp(m_Gene.HeadC,   p_Gene.HeadC,   bias);
+        LimbFLC = Vector3.Lerp(m_Gene.LimbFLC, p_Gene.LimbFLC, bias);
+        LimbFRC = Vector3.Lerp(m_Gene.LimbFRC, p_Gene.LimbFRC, bias);
+        LimbRLC = Vector3.Lerp(m_Gene.LimbRLC, p_Gene.LimbRLC, bias);
+        LimbRRC = Vector3.Lerp(m_Gene.LimbRRC, p_Gene.LimbRRC, bias);
         
         return;
 	}

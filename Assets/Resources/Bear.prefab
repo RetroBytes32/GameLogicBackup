@@ -186,22 +186,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entityTag: {fileID: 2598839388864798108}
   isActive: 1
-  chanceChangeDirection: 0.05
-  chanceToWalk: 0.1
-  chanceToFocusOnPlayer: 0.14
+  chanceToChangeDirection: 0.15
+  chanceToFocusOnPlayer: 0.13
   chanceToFocusOnEntity: 0.1
-  chanceToAttackPlayer: 0.1
+  chanceToAttackPlayer: 0.08
+  chanceToWalk: 0.1
   distanceToFocusOnPlayer: 50
   distanceToFocusOnEntity: 30
   distanceToAttackPlayer: 15
   distanceToWalk: 30
   heightPreferenceMin: 10
   heightPreferenceMax: 80
-  distanceToAttack: 50
+  distanceToAttack: 30
   distanceToFlee: 0
-  EntitiesToAttack:
+  love: 0
+  fear: 0
+  stress: 0
+  hunger: 0
+  memories: 
+  AttackEntities:
   - Sheep
-  EntitiesToFlee: []
+  FleeFromEntities: []
   DropOnDeath:
   - name: bone
     min: 2
@@ -209,6 +214,8 @@ MonoBehaviour:
   - name: meat
     min: 3
     max: 5
+  limbAxis: 0
+  limbAxisInvert: 0
   limbCycleRate: 50
   limbCycleRange: 20
   isDying: 0
@@ -217,7 +224,7 @@ MonoBehaviour:
   isAttacking: 0
   isFleeing: 0
   isConsuming: 0
-  consumtionTimer: 40
+  consumptionTimer: 40
   targetEntity: {fileID: 0}
   Head: {fileID: 6313538162445990760}
   Body: {fileID: 3766844368731954465}
