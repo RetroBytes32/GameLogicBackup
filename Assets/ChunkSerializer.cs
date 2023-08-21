@@ -296,8 +296,8 @@ public class ChunkSerializer {
             loadingZ = chunk_z;
             loading_chunk = chunk;
             
-            isChunkLoaded = false;
-            isLoading     = true;
+            isChunkLoaded    = false;
+            isLoading        = true;
             isChunkFinalized = false;
             
             Thread threadLoad = new Thread( chunkThreadLoad );
@@ -335,8 +335,8 @@ public class ChunkSerializer {
 	
 	public void chunkBuild() {
         
-        isChunkLoaded = false;
-        isLoading     = false;
+        isChunkLoaded    = false;
+        isLoading        = false;
         isChunkFinalized = true;
         
         //float chunk_x    = loadingX;

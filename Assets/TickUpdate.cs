@@ -6,55 +6,37 @@ using UnityEngine.UI;
 
 [System.Serializable]
 public struct InventoryItem {
-	
-	public string      name;
-	
-	public RawImage    inventoryImage;
+	public string     name;
+	public int        stackMax;
+	public RawImage   inventoryImage;
 }
 
 [System.Serializable]
 public struct SummonableEntity {
-	
-	public string      name;
+	public string     name;
 }
 
 [System.Serializable]
 public struct ConsumableItem {
-    
-	public string   name;
-	
-	public int      hunger;
-	
-	public int      saturation;
+    public string     name;
+	public int        hunger;
+	public int        saturation;
 }
 
 [System.Serializable]
 public struct BreakableItem {
-    
-	public string   name;
-	
-	public int      hardness;
-	
+    public string     name;
+	public string     itemClass;
+	public int        hardness;
 }
 
 [System.Serializable]
 public struct WeaponItem {
-    
-	public string   name;
-	
-	public int      damage;
-	
+    public string     name;
+	public int        attackDamage;
+	public int        strikingForce;
+	public string     targetItemClass;
 }
-
-[System.Serializable]
-public struct ToolItem {
-    
-	public string   name;
-	
-	public int      damage;
-	
-}
-
 
 
 
@@ -130,7 +112,7 @@ public class TickUpdate : MonoBehaviour {
 	[Space(5)]
     
 	public int   RenderDistance      = 4;
-	public float StaticDistance      = 0.8f;
+	public float StaticDistance      = 0.6f;
 	public float EntityDistance      = 0.2f;
     
     
@@ -154,7 +136,7 @@ public class TickUpdate : MonoBehaviour {
     
     
 	[Space(10)]
-	[Header("Inventory items")]
+	[Header("Collectable items")]
 	[Space(5)]
     
     public InventoryItem[] items;
@@ -193,18 +175,9 @@ public class TickUpdate : MonoBehaviour {
     
     
     
-    [Space(10)]
-	[Header("Tool items")]
+    [Space(40)]
+	[Header("Internal")]
 	[Space(5)]
-    
-    public ToolItem[] toolItem;
-    
-    
-    
-    
-    
-    
-	[Space(20)]
     
 	public bool  runCameraDamageAnimation = false;
 	public float damageIndicationOffset  = -1f;
@@ -285,391 +258,359 @@ public class TickUpdate : MonoBehaviour {
     
     
     
-	public void pauseGame() {
-        
-        Time.timeScale = 0f;
-        
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-        
-        isPaused = true;
-        return;
-	}
-    
-	public void unpauseGame() {
-        
-        Time.timeScale = 1f;
-        
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = true;
-        
-        isPaused = false;
-        return;
-	}
-    
-	void Start() {
-        
-        inventory = HUD.GetComponent<Inventory>();
-        
-        chunkSerializer.gameRules = GameObject.Find("GameRules");
-        
-	}
-	
-	
-	
-	
-	
 	
 	
 	void Update() {
-      
-      if (Input.GetKeyDown(KeyCode.BackQuote)) {
-        if (isPaused) 
-            return;
         
+        if (Input.GetKeyDown(KeyCode.BackQuote)) {
+            if (isPaused) 
+                return;
+            
+            if (doShowConsole) {
+                
+                GameObject consoleTextFieldObject = CommandConsole.transform.GetChild(0).GetChild(0).gameObject;
+                consoleTextFieldObject.SetActive(false);
+                
+                doShowConsole = false;
+                doMouseLook = true;
+                
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+                
+            } else {
+                doShowConsole = true;
+                doMouseLook = false;
+                
+                GameObject consoleTextFieldObject = CommandConsole.transform.GetChild(0).GetChild(0).gameObject;
+                consoleTextFieldObject.SetActive(true);
+                
+                InputField consoleField = CommandConsole.transform.GetChild(0).GetChild(0).GetComponent<InputField>();
+                
+                consoleField.Select();
+                consoleField.ActivateInputField();
+                consoleField.text = "";
+                
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+            
+        }
+        
+        // Process console commands
         if (doShowConsole) {
-            
-            GameObject consoleTextFieldObject = CommandConsole.transform.GetChild(0).GetChild(0).gameObject;
-            consoleTextFieldObject.SetActive(false);
-            
-            doShowConsole = false;
-            doMouseLook = true;
-            
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-            
-        } else {
-            doShowConsole = true;
-            doMouseLook = false;
-            
-            GameObject consoleTextFieldObject = CommandConsole.transform.GetChild(0).GetChild(0).gameObject;
-            consoleTextFieldObject.SetActive(true);
-            
-            InputField consoleField = CommandConsole.transform.GetChild(0).GetChild(0).GetComponent<InputField>();
-            
-            consoleField.Select();
-            consoleField.ActivateInputField();
-            consoleField.text = "";
-            
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-        }
-        
-      }
-      
-      // Process console commands
-      if (doShowConsole) {
-        if (Input.GetKeyDown(KeyCode.Return)) {
-          
-          CommandConsoleTimer = 200;
-          
-          GameObject consoleTextFieldObject = CommandConsole.transform.GetChild(0).GetChild(0).gameObject;
-          GameObject consoleTextObject      = CommandConsole.transform.GetChild(0).GetChild(1).gameObject;
-          
-          consoleTextFieldObject.SetActive(false);
-          consoleTextObject.SetActive(true);
-          
-          Text       consoleLine  = CommandConsole.transform.GetChild(0).GetChild(1).GetChild(1).GetComponent<Text>();
-          InputField consoleField = CommandConsole.transform.GetChild(0).GetChild(0).GetComponent<InputField>();
-          
-          consoleLine.color = new Color(consoleLine.color.r, consoleLine.color.g, consoleLine.color.b, 1.0f);
-          
-          doShowConsole = false;
-          doMouseLook = true;
-          
-          Cursor.lockState = CursorLockMode.Locked;
-          Cursor.visible = false;
-          
-          string commandText = consoleField.text;
-          string result = RunConsoleCommand(commandText);
-          
-          consoleLine.text = result;
-        }
-	  }
-      
-	  // ESCAPE key
-      if (Input.GetKeyDown(KeyCode.Escape)) {
-        
-	    isPaused = !isPaused;
-        
-	    if (isPaused == false) {
-          
-	      Cursor.lockState = CursorLockMode.Locked;
-	      Cursor.visible = false;
-	      doMouseLook = true;
-	      
-	      pauseMenu.Deactivate();
-	      
-	    } else {
-          
-	      Cursor.lockState = CursorLockMode.None;
-	      Cursor.visible = true;
-	      doMouseLook = false;
-	      
-	      pauseMenu.Activate();
-	      
-	      // Disable the console if active
-	      if (doShowConsole) {
-            
-            GameObject consoleTextFieldObject = CommandConsole.transform.GetChild(0).GetChild(0).gameObject;
-            consoleTextFieldObject.SetActive(false);
-            
-            doShowConsole = false;
-          }
-          
-	    }
-	    
-	  }
-	  
-      
-      // Update chunks while paused
-	  if (isPaused) {
-        
-	    unloadChunks();
-	    loadChunks();
-        
-	    updateChunks();
-        
-	    return;
-	  }
-      
-      
-	  if (doDayNightCycle)
-	    updateDayNightCycle();
-      
-      
-	  // Check to generate new chunks
-	  loadTimeOut++;
-	  if (loadTimeOut > 4) {
-        
-	    if (loadChunks())
-	      loadTimeOut=0;
-        
-	  }
-	  
-	  
-	  
-      //
-      // Console count down timer fade
-      //
-      
-      if (CommandConsoleTimer > -80) {
-          
-          CommandConsoleTimer--;
-          
-          // Fade out start
-          if (CommandConsoleTimer < 0) {
-              
-              CommandConsoleTimer = 0;
-              
-              CommandConsoleFade -= 0.005f;
-              
-              Text       consoleLine  = CommandConsole.transform.GetChild(0).GetChild(1).GetChild(1).GetComponent<Text>();
-              Image      consoleBack  = CommandConsole.transform.GetChild(0).GetChild(1).GetChild(0).GetComponent<Image>();
-              
-              consoleBack.color = new Color(consoleBack.color.r, consoleBack.color.g, consoleBack.color.b, CommandConsoleFade);
-              consoleLine.color = new Color(consoleLine.color.r, consoleLine.color.g, consoleLine.color.b, consoleLine.color.a * (CommandConsoleFade + 0.7f));
-          }
-          
-          // Fade out end
-          if (CommandConsoleFade < 0) {
-              
-              CommandConsoleFade = 0.3f;
-              
-              CommandConsoleTimer = -80;
-              
-              Text       consoleLine  = CommandConsole.transform.GetChild(0).GetChild(1).GetChild(1).GetComponent<Text>();
-              Image      consoleBack  = CommandConsole.transform.GetChild(0).GetChild(1).GetChild(0).GetComponent<Image>();
-              
-              consoleBack.color = new Color(consoleBack.color.r, consoleBack.color.g, consoleBack.color.b, CommandConsoleFade);
-              consoleLine.color = new Color(consoleLine.color.r, consoleLine.color.g, consoleLine.color.b, CommandConsoleFade);
-              
-              GameObject consoleTextObject = CommandConsole.transform.GetChild(0).GetChild(1).gameObject;
-              consoleTextObject.SetActive(false);
-          }
-          
-      }
-      
-	  
-	  //
-	  // Base tick counter
-	  //
-	  
-	  BaseCounter += Time.deltaTime / ((float)TickRate);
-	  
-	  if (BaseCounter > 0.045f) {
-	    BaseCounter  -= 0.045f;
-        
-        unloadChunks();
-        
-        //updateStaticObjects();
-        
-        
-        //
-        // Check to join entity genetics
-        //
-        
-        if (breedPairState == true) {
-            breedPairState = false;
-            
-            for (int i=0; i < numberOfChildren; i++) {
-                joinGeneticPair();
+            if (Input.GetKeyDown(KeyCode.Return)) {
+                
+                CommandConsoleTimer = 200;
+                
+                GameObject consoleTextFieldObject = CommandConsole.transform.GetChild(0).GetChild(0).gameObject;
+                GameObject consoleTextObject      = CommandConsole.transform.GetChild(0).GetChild(1).gameObject;
+                
+                consoleTextFieldObject.SetActive(false);
+                consoleTextObject.SetActive(true);
+                
+                Text       consoleLine  = CommandConsole.transform.GetChild(0).GetChild(1).GetChild(1).GetComponent<Text>();
+                InputField consoleField = CommandConsole.transform.GetChild(0).GetChild(0).GetComponent<InputField>();
+                
+                consoleLine.color = new Color(consoleLine.color.r, consoleLine.color.g, consoleLine.color.b, 1.0f);
+                
+                doShowConsole = false;
+                doMouseLook = true;
+                
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+                
+                string commandText = consoleField.text;
+                string result = RunConsoleCommand(commandText);
+                
+                consoleLine.text = result;
             }
         }
         
+        // ESCAPE key
+        if (Input.GetKeyDown(KeyCode.Escape)) {
+            
+            isPaused = !isPaused;
+            
+            if (isPaused == false) {
+                
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+                doMouseLook = true;
+                
+                pauseMenu.Deactivate();
+                
+            } else {
+                
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+                doMouseLook = false;
+                
+                pauseMenu.Activate();
+                
+                // Disable the console if active
+                if (doShowConsole) {
+                    
+                    GameObject consoleTextFieldObject = CommandConsole.transform.GetChild(0).GetChild(0).gameObject;
+                    consoleTextFieldObject.SetActive(false);
+                    
+                    doShowConsole = false;
+                }
+                
+            }
+            
+        }
         
         
-        //
-	    // Internal tick update timer
-	    //
-	    
-	    TickLowCounter += (float)TickRate;
-	    if (TickLowCounter > 10f) {
-            TickLowCounter -= 10f;
+        // Update chunks while paused
+        if (isPaused) {
             
-            TickCounter++;
-            
-            updateEntities();
+            unloadChunks();
+            loadChunks();
             
             updateChunks();
             
-            
-            // Update camera FOG distance
-            cameraObject.farClipPlane = ((((float)RenderDistance * (float)100))) * 3.0f;
-            
-            
-            //
-            // Check player fall reset
-            //
-            if (reset_player == true) {
-                
-                reset_player = false;
-                
-                Vector3 playerPos = new Vector3(Player.transform.position.x, 200f, Player.transform.position.z);
-                Ray ray_obj = new Ray(playerPos, -Vector3.up);
-                
-                Vector3 hitPos = Vector3.zero;
-                
-                RaycastHit hit_obj;
-                LayerMask GroundLayerMask = LayerMask.GetMask("Ground");
-                
-                if ( Physics.Raycast(ray_obj, out hit_obj, 500f, GroundLayerMask) ) {
-                    hitPos = new Vector3( hit_obj.point.x, hit_obj.point.y + 1f, hit_obj.point.z);
-                    Player.transform.position = hitPos;
-                }
-                
-            }
-            
-        }
-        
-        
-        
-        // No health or hunger in debug mode
-        if (doDebugMode) 
             return;
+        }
         
         
-	    //
-	    // Hunger indicator animation
-        //
+        if (doDayNightCycle)
+            updateDayNightCycle();
         
-        HungerShakeCounter++;
         
-        if ((inventory.hunger > 5) & (inventory.hunger < 11))
-	                               {if (HungerShakeCounter > 80) {HungerShakeCounter=0; inventory.hungerShake = true;}}
-	    if (inventory.hunger == 5) {if (HungerShakeCounter > 40) {HungerShakeCounter=0; inventory.hungerShake = true;}}
-	    if (inventory.hunger == 4) {if (HungerShakeCounter > 20) {HungerShakeCounter=0; inventory.hungerShake = true;}}
-	    if (inventory.hunger == 3) {if (HungerShakeCounter > 6)  {HungerShakeCounter=0; inventory.hungerShake = true;}}
-	    if (inventory.hunger == 2) {if (HungerShakeCounter > 4)  {HungerShakeCounter=0; inventory.hungerShake = true;}}
-	    if (inventory.hunger == 1) {if (HungerShakeCounter > 2)  {HungerShakeCounter=0; inventory.hungerShake = true;}}
-	    if (inventory.hunger == 0) {inventory.hungerShake = true;}
-	    
-	    
-	    
-	    
-	    //
-        // Health recharge timer
-        //
-        
-        HealthRecharge++;
-        
-        if (HealthRecharge > (inventory.health * 8)) {
+        // Check to generate new chunks
+        loadTimeOut++;
+        if (loadTimeOut > 4) {
             
-            HealthRecharge = 0;
+            if (loadChunks())
+                loadTimeOut=0;
             
-            if (inventory.health < 10) {
-                if (inventory.hunger > 4) {
-                    HealthRecharge = (inventory.health * (inventory.hunger / 10));
-                    inventory.removeHunger(1);
-                    inventory.addHealth(1);
-                }
-            }
         }
         
         
         
         //
-        // Hunger timer
+        // Console count down timer fade
         //
         
-        HungerTickCounter++;
+        if (CommandConsoleTimer > -80) {
+            
+            CommandConsoleTimer--;
+            
+            // Fade out start
+            if (CommandConsoleTimer < 0) {
+                
+                CommandConsoleTimer = 0;
+                
+                CommandConsoleFade -= 0.005f;
+                
+                Text       consoleLine  = CommandConsole.transform.GetChild(0).GetChild(1).GetChild(1).GetComponent<Text>();
+                Image      consoleBack  = CommandConsole.transform.GetChild(0).GetChild(1).GetChild(0).GetComponent<Image>();
+                
+                consoleBack.color = new Color(consoleBack.color.r, consoleBack.color.g, consoleBack.color.b, CommandConsoleFade);
+                consoleLine.color = new Color(consoleLine.color.r, consoleLine.color.g, consoleLine.color.b, consoleLine.color.a * (CommandConsoleFade + 0.7f));
+            }
+            
+            // Fade out end
+            if (CommandConsoleFade < 0) {
+                
+                CommandConsoleFade = 0.3f;
+                
+                CommandConsoleTimer = -80;
+                
+                Text       consoleLine  = CommandConsole.transform.GetChild(0).GetChild(1).GetChild(1).GetComponent<Text>();
+                Image      consoleBack  = CommandConsole.transform.GetChild(0).GetChild(1).GetChild(0).GetComponent<Image>();
+                
+                consoleBack.color = new Color(consoleBack.color.r, consoleBack.color.g, consoleBack.color.b, CommandConsoleFade);
+                consoleLine.color = new Color(consoleLine.color.r, consoleLine.color.g, consoleLine.color.b, CommandConsoleFade);
+                
+                GameObject consoleTextObject = CommandConsole.transform.GetChild(0).GetChild(1).gameObject;
+                consoleTextObject.SetActive(false);
+            }
+            
+        }
         
-        if (HungerTickCounter > (350 + (inventory.saturation * inventory.saturation))) {
-            HungerTickCounter = 0;
+        
+        //
+        // Base tick counter
+        //
+        
+        BaseCounter += Time.deltaTime / ((float)TickRate);
+        
+        if (BaseCounter > 0.045f) {
+            BaseCounter  -= 0.045f;
             
-            inventory.removeSaturation(10);
+            unloadChunks();
             
-            // Remove hunger until starving
-            if (inventory.hunger > 0) {
-                inventory.removeHunger( 1 );
-            } else {
-                inventory.removeHealth( 1 );
+            //updateStaticObjects();
+            
+            
+            //
+            // Check to join entity genetics
+            //
+            
+            if (breedPairState == true) {
+                breedPairState = false;
+                
+                for (int i=0; i < numberOfChildren; i++) {
+                    joinGeneticPair();
+                }
+            }
+            
+            
+            
+            //
+            // Internal tick update timer
+            //
+            
+            TickLowCounter += (float)TickRate;
+            if (TickLowCounter > 10f) {
+                TickLowCounter -= 10f;
+                
+                TickCounter++;
+                
+                updateEntities();
+                
+                updateChunks();
+                
+                
+                // Update camera FOG distance
+                cameraObject.farClipPlane = ((((float)RenderDistance * (float)100))) * 3.0f;
+                
+                
+                //
+                // Check player fall reset
+                //
+                if (reset_player == true) {
+                    
+                    reset_player = false;
+                    
+                    Vector3 playerPos = new Vector3(Player.transform.position.x, 200f, Player.transform.position.z);
+                    Ray ray_obj = new Ray(playerPos, -Vector3.up);
+                    
+                    Vector3 hitPos = Vector3.zero;
+                    
+                    RaycastHit hit_obj;
+                    LayerMask GroundLayerMask = LayerMask.GetMask("Ground");
+                    
+                    if ( Physics.Raycast(ray_obj, out hit_obj, 500f, GroundLayerMask) ) {
+                        hitPos = new Vector3( hit_obj.point.x, hit_obj.point.y + 1f, hit_obj.point.z);
+                        Player.transform.position = hitPos;
+                    }
+                    
+                }
+                
+            }
+            
+            
+            
+            // No health or hunger in debug mode
+            if (doDebugMode) 
+                return;
+            
+            
+            //
+            // Hunger indicator animation
+            //
+            
+            HungerShakeCounter++;
+            
+            if ((inventory.hunger > 5) & (inventory.hunger < 11))
+                                    {if (HungerShakeCounter > 80) {HungerShakeCounter=0; inventory.hungerShake = true;}}
+            if (inventory.hunger == 5) {if (HungerShakeCounter > 40) {HungerShakeCounter=0; inventory.hungerShake = true;}}
+            if (inventory.hunger == 4) {if (HungerShakeCounter > 20) {HungerShakeCounter=0; inventory.hungerShake = true;}}
+            if (inventory.hunger == 3) {if (HungerShakeCounter > 6)  {HungerShakeCounter=0; inventory.hungerShake = true;}}
+            if (inventory.hunger == 2) {if (HungerShakeCounter > 4)  {HungerShakeCounter=0; inventory.hungerShake = true;}}
+            if (inventory.hunger == 1) {if (HungerShakeCounter > 2)  {HungerShakeCounter=0; inventory.hungerShake = true;}}
+            if (inventory.hunger == 0) {inventory.hungerShake = true;}
+            
+            
+            
+            
+            //
+            // Health recharge timer
+            //
+            
+            HealthRecharge++;
+            
+            if (HealthRecharge > (inventory.health * 8)) {
+                
+                HealthRecharge = 0;
+                
+                if (inventory.health < 10) {
+                    if (inventory.hunger > 4) {
+                        HealthRecharge = (inventory.health * (inventory.hunger / 10));
+                        inventory.removeHunger(1);
+                        inventory.addHealth(1);
+                    }
+                }
+            }
+            
+            
+            
+            //
+            // Hunger timer
+            //
+            
+            HungerTickCounter++;
+            
+            if (HungerTickCounter > (350 + (inventory.saturation * inventory.saturation))) {
+                HungerTickCounter = 0;
+                
+                inventory.removeSaturation(10);
+                
+                // Remove hunger until starving
+                if (inventory.hunger > 0) {
+                    inventory.removeHunger( 1 );
+                } else {
+                    inventory.removeHealth( 1 );
+                }
+                
+            }
+            
+            return;
+        }
+        
+        
+        
+        
+        
+        
+        //
+        // Camera damage indication animation cycle
+    
+        if (runCameraDamageAnimation) {
+                
+                if (damageIndicationOffset == -1f) 
+                    damageIndicationOffset = 5f;
+                
+                if (damageIndicationOffset > 0) {
+                    damageIndicationOffset -= 1f;
+                } else {
+                    
+                    damageIndicationOffset = -1f;
+                    runCameraDamageAnimation = false;
+                    
+                }
+                
+        }
+        
+        //
+        // Check player death
+        
+        if ((inventory.health <= 0)) {
+            if (!doDebugMode) {
+                
+                inventory.health = 0;
+                
+                deathMenu.SetActive(true);
+                
+                pauseGame();
+                doMouseLook = false;
             }
             
         }
         
         return;
-	  }
-	  
-	  
-	  
-	  
-	  
-	  
-	  //
-	  // Camera damage indication animation cycle
-
-	  if (runCameraDamageAnimation) {
-            
-            if (damageIndicationOffset == -1f) 
-                damageIndicationOffset = 5f;
-            
-            if (damageIndicationOffset > 0) {
-                damageIndicationOffset -= 1f;
-            } else {
-                
-                damageIndicationOffset = -1f;
-                runCameraDamageAnimation = false;
-                
-            }
-            
-	  }
-	  
-	  //
-	  // Check player death
-	  
-	  if (inventory.health <= 0) {
-	    
-	    inventory.health = 0;
-	    
-	    deathMenu.SetActive(true);
-	    
-	    pauseGame();
-	    doMouseLook = false;
-	    
-	  }
-	  
-	  return;
 	}
 	
 	
@@ -1588,6 +1529,7 @@ public class TickUpdate : MonoBehaviour {
             chunkSerializer.createWorld(worldName);
         
         // Clear the inventory
+        inventory.initiate();
         inventory.clear();
         
         // Default health and hunger
@@ -1616,7 +1558,7 @@ public class TickUpdate : MonoBehaviour {
         reset_player = true;
         
         
-        chunkGenerator.Initiate();
+        chunkGenerator.initiate();
         
         
         Cursor.lockState = CursorLockMode.Locked;
@@ -1742,6 +1684,8 @@ public class TickUpdate : MonoBehaviour {
         TickCounter       = 0;
         BaseCounter       = 0;
         
+        
+        inventory.shutdown();
 	}
     
     
@@ -1783,21 +1727,16 @@ public class TickUpdate : MonoBehaviour {
     
     
     
-    
-    
-    
-    
-    
 	bool checkChunkFree(float chunk_x, float chunk_z) {
         
         string chunkName = chunk_x + "_" + chunk_z;
         
         for (int i=0; i < ChunkList.transform.childCount; i++) {
-        
-        string chunk_name = ChunkList.transform.GetChild(i).gameObject.name;
-        
-        if (chunk_name == chunkName) 
-            return false;
+            
+            string chunk_name = ChunkList.transform.GetChild(i).gameObject.name;
+            
+            if (chunk_name == chunkName) 
+                return false;
             
         }
         
@@ -1806,32 +1745,62 @@ public class TickUpdate : MonoBehaviour {
     
     
     
-    
-    
-    
-    
-    
-    
-    
 	GameObject getChunk(float chunk_x, float chunk_z) {
-    
-    string chunkName = chunk_x + "_" + chunk_z;
-    
-    for (int i=0; i < ChunkList.transform.childCount; i++) {
         
-        string chunk_name = ChunkList.transform.GetChild(i).gameObject.name;
+        string chunkName = chunk_x + "_" + chunk_z;
         
-        if (chunk_name == chunkName) {
-        
-        return ChunkList.transform.GetChild(i).gameObject;
+        for (int i=0; i < ChunkList.transform.childCount; i++) {
+            
+            string chunk_name = ChunkList.transform.GetChild(i).gameObject.name;
+            
+            if (chunk_name == chunkName) 
+                return ChunkList.transform.GetChild(i).gameObject;
+            
         }
         
-    }
-    
-    return null;
+        return null;
 	}
     
     
+	public void pauseGame() {
+        
+        Time.timeScale = 0f;
+        
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+        
+        isPaused = true;
+        return;
+	}
+    
+	public void unpauseGame() {
+        
+        Time.timeScale = 1f;
+        
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = true;
+        
+        isPaused = false;
+        return;
+	}
+    
+	void Start() {
+        
+        inventory = HUD.GetComponent<Inventory>();
+        
+        chunkSerializer.gameRules = GameObject.Find("GameRules");
+        
+	}
+	
+	
+	
+	
+	
+	
+	
+	//
+	// Command console
+	//
     
     string RunConsoleCommand(string inputString) {
         
@@ -1845,10 +1814,11 @@ public class TickUpdate : MonoBehaviour {
         
         switch (paramaters[0]) {
             
-            case "summon":   return consoleSummon(paramaters);
-            case "give":     return consoleGive(paramaters);
-            case "rule":     return consoleRule(paramaters);
-            case "tp":       return consoleTP(paramaters);
+            case "structure":   return consoleStructure(paramaters);
+            case "summon":      return consoleSummon(paramaters);
+            case "give":        return consoleGive(paramaters);
+            case "set":         return consoleRule(paramaters);
+            case "tp":          return consoleTP(paramaters);
             
         }
         
@@ -1859,6 +1829,7 @@ public class TickUpdate : MonoBehaviour {
     
     //
     // Summon an entity
+    //
     
     string consoleSummon(string[] paramaters) {
         string entityName="";
@@ -1894,7 +1865,8 @@ public class TickUpdate : MonoBehaviour {
     
     
     //
-    // Give an item
+    // Give item
+    //
     
     string consoleGive(string[] paramaters) {
         string itemName="";
@@ -1910,7 +1882,7 @@ public class TickUpdate : MonoBehaviour {
         for (int i=0; i < items.Length; i++) {
             if (items[i].name == itemName) {
                 
-                inventory.addItem(itemName, itemCount);
+                inventory.addItem(itemName, itemCount, items[i].stackMax);
                 
                 hudInterface.updateInHand();
                 
@@ -1924,12 +1896,15 @@ public class TickUpdate : MonoBehaviour {
     
     
     //
-    // Set game rule state
+    // Set world rule state
+    //
     
     string consoleRule(string[] paramaters) {
+        
         string ruleName="";
         if (paramaters.Length > 1) 
             ruleName = paramaters[1];
+        
         string status="true";
         if (paramaters.Length > 2) 
             status = paramaters[2];
@@ -1947,12 +1922,12 @@ public class TickUpdate : MonoBehaviour {
         
         // DEBUG mode
         if (ruleName == "debug") {
-            if (status=="true")  {
+            if ((status=="true") | (status=="1"))  {
                 doDebugMode = true;
                 HUD.transform.GetChild(5).gameObject.SetActive(false);
                 HUD.transform.GetChild(6).gameObject.SetActive(false);
                 return "Debug enabled";}
-            if (status=="false") {
+            if ((status=="false") | (status=="0")) {
                 doDebugMode = false;
                 HUD.transform.GetChild(5).gameObject.SetActive(true);
                 HUD.transform.GetChild(6).gameObject.SetActive(true);
@@ -1963,13 +1938,15 @@ public class TickUpdate : MonoBehaviour {
     }
     
     
+    
+    //
     // Teleport
+    //
     
     string consoleTP(string[] paramaters) {
         
-        if (paramaters.Length < 4) {
+        if (paramaters.Length < 4) 
             return "Cannot teleport to location";
-        }
         
         float xPos = float.Parse(paramaters[1]);
         float yPos = float.Parse(paramaters[2]);
@@ -1978,6 +1955,45 @@ public class TickUpdate : MonoBehaviour {
         Player.transform.position = new Vector3(xPos, yPos, zPos);
         
         return "Teleported player to "+paramaters[1]+", "+paramaters[2]+", "+paramaters[3];
+    }
+    
+    
+    
+    //
+    // Structure
+    //
+    
+    string consoleStructure(string[] paramaters) {
+        
+        if (paramaters.Length < 1) 
+            return "Cannot generate structure";
+        
+        for (int i=0; i < chunkGenerator.structures.Length; i++) {
+            
+            if (chunkGenerator.structures[i].name != paramaters[1]) 
+                continue;
+            
+            for (int a=0; a < chunkGenerator.structures[i].items.Length; a++) {
+                
+                GameObject newItem = MonoBehaviour.Instantiate( Resources.Load( chunkGenerator.structures[i].items[a].name )) as GameObject;
+                GameObject currentChunk = getChunk(playerChunkX, playerChunkZ);
+                
+                Vector3 newPosition;
+                newPosition.x = Player.transform.position.x;
+                newPosition.y = Player.transform.position.y;
+                newPosition.z = Player.transform.position.z;
+                
+                newPosition += chunkGenerator.structures[i].items[a].position;
+                newItem.transform.position = newPosition;
+                
+                newItem.name = chunkGenerator.structures[i].items[a].name;
+                newItem.transform.parent = currentChunk.transform.GetChild(2).gameObject.transform;
+            }
+            
+            return "Structure placed '"+paramaters[1]+"'";
+        }
+        
+        return "Structure not found '"+paramaters[1]+"'";
     }
     
     

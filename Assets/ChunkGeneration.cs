@@ -5,6 +5,32 @@ using UnityEngine;
 
 
 [System.Serializable]
+public class StructureItem {
+    public string   name;
+    public Vector3  position;
+}
+
+[System.Serializable]
+public class StructureEntity {
+    public string   name;
+    public Vector3  position;
+}
+
+
+[System.Serializable]
+public class Structure {
+    
+    public string name;
+    
+    public StructureItem[]    items;
+    public StructureEntity[]  entities;
+    
+}
+
+
+
+
+[System.Serializable]
 public class Biome {
     
 	public string name;
@@ -76,7 +102,7 @@ public class Biome {
 	[Header("Static objects")]
 	[Space(5)]
 	
-	public StaticSpawn[]   staticList;
+	public StaticSpawn[]  staticList;
 	
 	
 	
@@ -84,49 +110,94 @@ public class Biome {
 	[Header("Dynamic entities")]
 	[Space(5)]
 	
-	public DynamicSpawn[]   entities;
+	public DynamicSpawn[]  entities;
+	
+	
+	
+	[Space(10)]
+	[Header("Tree generation")]
+	[Space(5)]
+	
+	public TreeSpawn[]  treeSpawn;
+	
 	
 }
 
 
 [System.Serializable]
 public class StaticSpawn {
-
+    
 	public string name;
-
-	public int    density;
-
+    
 	public float  height_range_min;
 	public float  height_range_max;
+    
+	public int    density;
+    
+};
 
+
+[System.Serializable]
+public class TreeSpawn {
+    
+	[Space(10)]
+	[Header("Trunk")]
+	[Space(5)]
+	
+	public string name;
+    
+	public float  height_range_min;
+	public float  height_range_max;
+    
+	public int    density;
+    
+	public float  stack_height_min;
+	public float  stack_height_max;
+    
+	[Space(10)]
+	[Header("Leafs")]
+	[Space(5)]
+	
+    public string leafName;
+    
+    public int    leafDensity;
+    
+    public float  leafHeight;
+    public float  leafSpread;
+    
+    public float  leafHeightMul;
+    public float  leafSpreadMul;
+    
+    public bool   scaleAndStagger;
+    
 };
 
 
 [System.Serializable]
 public class DynamicSpawn {
-
+    
 	public string name;
-
+    
 	public int Density;
-
+    
 	public float  height_range_min;
 	public float  height_range_max;
-
+    
 	public Color[] ColorHead;
 	public Color[] ColorBody;
 	public Color[] ColorLimbs;
-
+    
 };
 
 
 [System.Serializable]
 public class PerlinOctive {
-
+    
 	public float amplitude;
 	public float frequency;
-
+    
 	public float height;
-
+    
 }
 
 
@@ -185,8 +256,18 @@ public class ChunkGeneration : MonoBehaviour {
     
     
     
+    
+    [Space(10)]
+	[Header("Structures")]
+	[Space(5)]
+    
+    public Structure[]   structures;
+    
+    
+    
+    
 	[Space(10)]
-	[Header("Water")]
+	[Header("Water table")]
 	[Space(5)]
     
 	public Color WaterColor;
@@ -229,22 +310,19 @@ public class ChunkGeneration : MonoBehaviour {
         newStaticContainer.transform.parent = currentChunk.transform;
         newStaticContainer.SetActive(false);
         
-        
-        //
         // Calculate the chunk seed
         
         currentChunkSeed = worldSeed + ( (int)chunk_x + (int)chunk_z );
         Random.InitState( currentChunkSeed );
         
         
-        //
         // Get terrain mesh
-        
         GameObject chunkMeshObject = currentChunk.transform.GetChild(0).gameObject;
         Mesh chunkMesh = currentChunk.transform.GetChild(0).gameObject.GetComponent<MeshFilter>().mesh;
-        //Renderer chunkRenderer = chunkMeshObject.GetComponent<Renderer>();
         
+        //Renderer chunkRenderer = chunkMeshObject.GetComponent<Renderer>();
         MeshCollider chunkMeshCollider = chunkMeshObject.GetComponent<MeshCollider>();
+        
         
         // Set chunk position
         chunkMeshObject.transform.Translate(-(chunk_sz/2), 0, -(chunk_sz/2));
@@ -263,8 +341,10 @@ public class ChunkGeneration : MonoBehaviour {
         // Generation values
         int array_size   = (101) * (101) * 6;
         
-        Vector3[] vertex_array = new Vector3[array_size];
-        Color[]   color_array  = new Color  [array_size];
+        Vector3[]  vertex_array  = new Vector3[array_size];
+        Color[]    color_array   = new Color  [array_size];
+        float[,]   biome_array   = new float[101, 101];
+        
         
         
         
@@ -369,9 +449,10 @@ public class ChunkGeneration : MonoBehaviour {
                     // Biome region assignment
                     //
                     
-                    float biomeNoiseTemp=0f;
                     float biomeNoiseSample=0f;
+                    
                     float biomePriority=0f;
+                    float biomePrioritySample=0f;
                     
                     for (int a=0; a < biomes.Length; a++) {
                         
@@ -380,21 +461,22 @@ public class ChunkGeneration : MonoBehaviour {
                         
                         float sample = ((Mathf.PerlinNoise(xCoord, zCoord) * 2) - 1) * biomes[a].region_mul_y;
                         
-                        if (sample > biomeNoiseTemp) {
-                            
-                            //if (biomes[a].priority > 0) 
-                            //    continue;
-                            
-                            //biomePriority = biomes[a].priority;
-                            
-                            biomeNoiseTemp += sample;
-                            biomeIndex = a;
-                            
-                        }
+                        if (sample <= 0) 
+                            continue;
                         
+                        if (biomes[a].priority < biomePriority) 
+                            continue;
+                        
+                        biomePriority       = biomes[a].priority;
+                        biomePrioritySample = sample;
+                        
+                        biomeIndex = a;
                         
                     }
-                    biomeNoiseSample = biomeNoiseTemp;
+                    
+                    biomeNoiseSample = biomePrioritySample;
+                    
+                    biome_array[x, z] = biomeIndex;
                     
                     
                     
@@ -552,6 +634,9 @@ public class ChunkGeneration : MonoBehaviour {
                         if (biomes[biomeIndex].staticList.Length > 0) 
                             generateStaticObject(x, noise_total, z, currentChunk, chunkTag, biomeIndex);
                         
+                        if (biomes[biomeIndex].treeSpawn.Length > 0) 
+                            generateTreeObject(x, noise_total, z, currentChunk, chunkTag, biomeIndex);
+                        
                         if (addWorldEntities) 
                             generateDymanicEntity(x, noise_total, z, currentChunk, chunkTag, biomeIndex);
                         
@@ -580,29 +665,6 @@ public class ChunkGeneration : MonoBehaviour {
         continue;
         }
         
-        
-        /*
-        
-        //
-        // Post generation smoothing
-        for (int z=1; z < 100; z++) {
-            
-            for (int x=1; x < 100; x++) {
-                
-                float posA = chunkTag.vertex_grid[x,   z];
-                float posB = chunkTag.vertex_grid[x+1, z];
-                float posC = chunkTag.vertex_grid[x,   z+1];
-                float posD = chunkTag.vertex_grid[x+1, z+1];
-                
-                if (posA > posB) 
-                    chunkTag.vertex_grid[x, z]   /= 2f;
-                
-                
-            }
-            
-        }
-         
-        */
         
         
         
@@ -644,7 +706,11 @@ public class ChunkGeneration : MonoBehaviour {
 	
 	
 	
-	public void Initiate() {
+	
+	
+	
+	
+	public void initiate() {
 
 
         //
@@ -683,35 +749,6 @@ public class ChunkGeneration : MonoBehaviour {
                 
             }
             
-            
-            
-            /*
-            // Create tree log base material
-            GameObject logStatic = MonoBehaviour.Instantiate( Resources.Load( "log" )) as GameObject;
-            Renderer   logMeshRenderer = logStatic.GetComponent<Renderer>();
-    
-            logStatic.transform.parent    = biomeObject.transform;
-            //logStatic.transform.position  = new Vector3(0f, 0f, 0f);
-    
-            logStatic.name    = "log_material";
-            Material mat_log  = logMeshRenderer.material;
-            mat_log.color     = biomes[i].treeWoodColor;
-    
-    
-    
-    
-            // Create tree leaf base material
-            GameObject leafStatic = MonoBehaviour.Instantiate( Resources.Load( "leaves" )) as GameObject;
-            Renderer   leafMeshRenderer = leafStatic.GetComponent<Renderer>();
-    
-            leafStatic.transform.parent    = biomeObject.transform;
-            leafStatic.transform.position  = new Vector3(0f, 0f, 0f);
-    
-            leafStatic.name   = "leaf_material";
-            Material mat_leaf = leafMeshRenderer.material;
-            mat_leaf.color    = biomes[i].treeLeafColor;
-            */
-            
         }
         
         
@@ -723,7 +760,7 @@ public class ChunkGeneration : MonoBehaviour {
         //
         // Initiate cached arrays
         
-        int array_size = (100+1) * (100+1) * 6;
+        int array_size = (101) * (101) * 6;
         index_array_cache = new int[array_size];
         vertex_uv_cache   = new Vector2[array_size];
         
@@ -756,7 +793,7 @@ public class ChunkGeneration : MonoBehaviour {
         
         
         //
-        // Generate index array
+        // Generate UV array
         
         int index=0;
         for (int u=0; u < 100; u++) {
@@ -773,7 +810,6 @@ public class ChunkGeneration : MonoBehaviour {
         
         return;
 	}
-    
     
     
     
@@ -803,6 +839,95 @@ public class ChunkGeneration : MonoBehaviour {
 	
 	
 	
+	
+	
+	
+	public bool generateTreeObject(float x, float y, float z, GameObject chunk, ChunkTag chunkTag, int biomeIndex) {
+        
+        int tree_type = Random.Range(0, biomes[biomeIndex].treeSpawn.Length);
+        
+        if ((y < biomes[biomeIndex].treeSpawn[tree_type].height_range_min) | (y > biomes[biomeIndex].treeSpawn[tree_type].height_range_max))
+            return false;
+        
+        if (Random.Range(0, 10000) > (biomes[biomeIndex].treeSpawn[tree_type].density))
+            return false;
+        
+        float minStackingHeight = biomes[biomeIndex].treeSpawn[tree_type].stack_height_min;
+        float maxStackingHeight = biomes[biomeIndex].treeSpawn[tree_type].stack_height_max;
+        
+        float stackHeight = Random.Range(minStackingHeight, maxStackingHeight);
+        
+        if ((maxStackingHeight == 0) & (minStackingHeight == 0)) 
+            stackHeight = 1;
+        
+        // Generate tree trunk logs
+        for (int i=0; i < stackHeight; i++) {
+            
+            GameObject staticObject;
+            staticObject = Instantiate( Resources.Load( biomes[biomeIndex].treeSpawn[tree_type].name )) as GameObject;
+            staticObject.name = biomes[biomeIndex].treeSpawn[tree_type].name;
+            
+            staticObject.transform.parent = chunk.transform.GetChild(2).transform;
+            
+            float stackOffset = staticObject.transform.localScale.y * i;
+            
+            staticObject.transform.Translate(x - 50f, y + (staticObject.transform.localScale.y / 2.25f) + stackOffset, z - 50f);
+            
+        }
+        
+        // Generate tree leaves
+        for (int i=0; i < biomes[biomeIndex].treeSpawn[tree_type].leafDensity; i++) {
+            
+            GameObject staticObject;
+            staticObject = Instantiate( Resources.Load( biomes[biomeIndex].treeSpawn[tree_type].leafName )) as GameObject;
+            staticObject.name = biomes[biomeIndex].treeSpawn[tree_type].name;
+            
+            staticObject.transform.parent = chunk.transform.GetChild(2).transform;
+            
+            float stackOffset = stackHeight * 0.87f;
+            
+            float leafHeight    = biomes[biomeIndex].treeSpawn[tree_type].leafHeight;
+            float leafSpread    = biomes[biomeIndex].treeSpawn[tree_type].leafSpread;
+            
+            float leafHeightMul = biomes[biomeIndex].treeSpawn[tree_type].leafHeightMul;
+            float leafSpreadMul = biomes[biomeIndex].treeSpawn[tree_type].leafSpreadMul;
+            
+            float offsetX=0;
+            float offsetY=0;
+            float offsetZ=0;
+            
+            if (biomes[biomeIndex].treeSpawn[tree_type].scaleAndStagger) {
+                
+                Vector3 newScale;
+                newScale.x = leafSpread + staticObject.transform.localScale.x * (i * leafSpreadMul);
+                newScale.y = 1f;
+                newScale.z = leafSpread + staticObject.transform.localScale.z * (i * leafSpreadMul);
+                
+                staticObject.transform.localScale = newScale;
+                
+                offsetY = stackHeight + leafHeight + (i * leafHeightMul);
+                
+            } else {
+                
+                offsetX = leafSpread +  Random.Range(0f, leafSpreadMul) - Random.Range(0f, leafSpreadMul);
+                offsetY = leafHeight + (Random.Range(0f, leafHeightMul) - Random.Range(0f, leafHeightMul)) + stackOffset;
+                offsetZ = leafSpread +  Random.Range(0f, leafSpreadMul) - Random.Range(0f, leafSpreadMul);
+            }
+            
+            staticObject.transform.Translate(x - 50f + offsetX, y + (staticObject.transform.localScale.y / 2.25f) + offsetY, z - 50f + offsetZ);
+            
+        }
+        
+        return true;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
 	public void generateDymanicEntity(float x, float y, float z, GameObject chunk, ChunkTag chunkTag, int biomeIndex) {
         
         if (biomes[biomeIndex].entities.Length == 0) return;
@@ -814,13 +939,8 @@ public class ChunkGeneration : MonoBehaviour {
         
         if (biomes[biomeIndex].entities.Length == 0) return;
         
-        
-        
         if ((y < biomes[biomeIndex].entities[dynamic_type].height_range_min) | (y > biomes[biomeIndex].entities[dynamic_type].height_range_max))
             return;
-        
-        //
-        // Create entity object
         
         GameObject dynamicObject;
         dynamicObject = Instantiate( Resources.Load( biomes[biomeIndex].entities[dynamic_type].name )) as GameObject;
