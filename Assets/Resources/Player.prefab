@@ -832,6 +832,9 @@ MonoBehaviour:
   attackAnimationX: 1.2
   attackAnimationY: -0.3
   attackAnimationZ: 2
+  pickupAnimationX: 0.5
+  pickupAnimationY: -0.2
+  pickupAnimationZ: 1.1
 --- !u!114 &8135201595506357587
 MonoBehaviour:
   m_ObjectHideFlags: 0

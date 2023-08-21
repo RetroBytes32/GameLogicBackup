@@ -139,9 +139,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entityTag: {fileID: 3876658540135745321}
   isActive: 1
-  chanceToChangeDirection: 0.15
-  chanceToFocusOnPlayer: 0.13
-  chanceToFocusOnEntity: 0.2
+  chanceToChangeDirection: 0.09
+  chanceToFocusOnPlayer: 0.09
+  chanceToFocusOnEntity: 0.1
   chanceToAttackPlayer: 0.0001
   chanceToWalk: 0.1
   distanceToFocusOnPlayer: 30
