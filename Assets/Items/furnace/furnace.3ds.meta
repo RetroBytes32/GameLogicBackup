@@ -1,32 +1,21 @@
 fileFormatVersion: 2
-guid: 05746a8b5fda22e4886be659b19ddaf8
+guid: 0008040c306a5ea41bbd73f0032f73a0
 ModelImporter:
   serializedVersion: 23
   fileIDToRecycleName:
-    100000: bottom
-    100002: //RootNode
-    100004: mesh01
-    100006: top
-    100008: trunk
-    400000: bottom
-    400002: //RootNode
-    400004: mesh01
-    400006: top
-    400008: trunk
+    100000: //RootNode
+    100002: mesh01
+    100004: mesh02
+    400000: //RootNode
+    400002: mesh01
+    400004: mesh02
     2100000: -- default --
-    2300000: bottom
-    2300002: mesh01
-    2300004: top
-    2300006: trunk
-    3300000: bottom
-    3300002: mesh01
-    3300004: top
-    3300006: trunk
-    4300000: trunk
-    4300002: mesh01
-    4300004: top
-    4300006: bottom
-    2186277476908879412: ImportLogs
+    2300000: mesh01
+    2300002: mesh02
+    3300000: mesh01
+    3300002: mesh02
+    4300000: mesh01
+    4300002: mesh02
   externalObjects: {}
   materials:
     importMaterials: 1
