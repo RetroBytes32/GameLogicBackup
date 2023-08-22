@@ -33,39 +33,44 @@ public class Movement : MonoBehaviour {
 	void Update () {
         
         // Calculate forward movement
+        float x=0f;
+        float z=0f;
         Vector3 movement = new Vector3(0f, 0f, 0f);
         
-        if (tickUpdate.doShowConsole) 
-            return;
-        
-        float x = Input.GetAxis("Horizontal");
-        float z = Input.GetAxis("Vertical");
-        
-        movement = (PlayerSourceTransform.transform.right * x) + (PlayerSourceTransform.transform.forward * z);
-        
-        // DEBUG "creative" mode
-        if (tickUpdate.doDebugMode) {
-            if (Input.GetButton("Jump")) 
-                movement.y = 0.87f;
+        if (!tickUpdate.doShowConsole) {
             
-            if (Input.GetButton("Crouch")) 
-                movement.y -= 0.87f;
+            x = Input.GetAxis("Horizontal");
+            z = Input.GetAxis("Vertical");
             
-            controller.Move(movement * (Speed * 3.5f) * Time.deltaTime);
+            movement = (PlayerSourceTransform.transform.right * x) + (PlayerSourceTransform.transform.forward * z);
             
-            return;
+            // DEBUG "creative" mode
+            if (tickUpdate.doDebugMode) {
+                if (Input.GetButton("Jump")) 
+                    movement.y = 0.87f;
+                
+                if (Input.GetButton("Crouch")) 
+                    movement.y -= 0.87f;
+                
+                controller.Move(movement * (Speed * 3.5f) * Time.deltaTime);
+                
+                return;
+            }
+            
+            // Directional movement
+            controller.Move(movement * Speed * Time.deltaTime);
+            
+            // Remove hunger saturation when moving
+            if (controller.velocity != Vector3.zero) {
+                if (Random.Range(0, 20) == 1) 
+                    tickUpdate.inventory.removeSaturation(1);
+            }
+            
         }
         
-        // Directional movement
-        controller.Move(movement * Speed * Time.deltaTime);
         
-        
-        // Remove hunger saturation when moving
-        if (controller.velocity != Vector3.zero) {
-            if (Random.Range(0, 20) == 1) 
-                tickUpdate.inventory.removeSaturation(1);
-        }
-        
+        if (tickUpdate.doDebugMode) 
+            return;
         
         // Check if we are on the ground
         isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
@@ -75,12 +80,15 @@ public class Movement : MonoBehaviour {
             
             if ((readyToJump) & (Input.GetButton("Jump"))) {
                 
-                Velocity.y = JumpHeight;
-                
-                isGrounded = false;
-                readyToJump=false;
-                
-                tickUpdate.inventory.removeSaturation(3);
+                if (!tickUpdate.doShowConsole) {
+                    
+                    Velocity.y = JumpHeight;
+                    
+                    isGrounded = false;
+                    readyToJump=false;
+                    
+                    tickUpdate.inventory.removeSaturation(3);
+                }
                 
             } else {
                 

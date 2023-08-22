@@ -27,9 +27,11 @@ public class Attack : MonoBehaviour {
     [Header("Player base melee damage")]
 	[Space(5)]
     
-	public int    playerAttackDamage = 1;
+	public int       playerAttackDamage  = 1;
+	public int       playerstrikingForce = 1;
+	public string    playerTargetItemClass;
 	
-	public float  Distance  = 7.0f;
+	public float     Distance            = 7.0f;
 	
 	
 	[Space(10)]
@@ -44,6 +46,15 @@ public class Attack : MonoBehaviour {
 	public float  attackAnimationY              = 1.4f;
 	public float  attackAnimationZ              = 1.4f;
 	
+	
+	
+	[Space(10)]
+    [Header("Pickup animation")]
+	[Space(5)]
+    
+	public float  pickupAnimationX              = 1.4f;
+	public float  pickupAnimationY              = 1.4f;
+	public float  pickupAnimationZ              = 1.4f;
 	
 	
 	
@@ -86,14 +97,18 @@ public class Attack : MonoBehaviour {
             
             string inHandItem = inventory.checkSlot();
             
-            playerAttackDamage = 1;
+            playerAttackDamage     = 1;
+            playerstrikingForce      = 1;
+            playerTargetItemClass  = "";
             
             // Check current weapon melee damage amount
             for (int i=0; i < tickUpdate.weaponItem.Length; i++) {
                 if (tickUpdate.weaponItem[i].name != inHandItem) 
                     continue;
                 
-                playerAttackDamage = tickUpdate.weaponItem[i].damage;
+                playerAttackDamage    = tickUpdate.weaponItem[i].attackDamage;
+                playerstrikingForce   = tickUpdate.weaponItem[i].strikingForce;
+                playerTargetItemClass = tickUpdate.weaponItem[i].targetItemClass;
                 
             }
             
@@ -132,11 +147,32 @@ public class Attack : MonoBehaviour {
                     attackTimer = 0;
                     
                     runAttackAnimCycle = false;
+                    
+                    // Check if the item is shatterable
+                    for (int i=0; i < tickUpdate.shatterableItem.Length; i++) {
+                        if (tickUpdate.shatterableItem[i].name != objectName) 
+                            continue;
+                        
+                        // Destroy the item
+                        Destroy( hit_obj.transform.parent.transform.gameObject );
+                        
+                        return;
+                    }
+                    
+                    // Pick up the item
                     runPickupAnimCycle = true;
+                    
+                    // Get max stack count
+                    int maxStack=0;
+                    for (int i=0; i < tickUpdate.items.Length; i++) {
+                        if (tickUpdate.items[i].name != objectName) 
+                            continue;
+                        maxStack = tickUpdate.items[i].stackMax;
+                    }
                     
                     // Pick up the item
                     Destroy( hit_obj.transform.parent.transform.gameObject );
-                    inventory.addItem(objectName, 1);
+                    inventory.addItem(objectName, 1, maxStack);
                     interfaceScript.updateInHand();
                     
                     return;
@@ -148,16 +184,52 @@ public class Attack : MonoBehaviour {
                 
                 if (attackTimer < 1) {
                     
+                    // Get max stack count
+                    int maxStack=0;
+                    for (int i=0; i < tickUpdate.items.Length; i++) {
+                        if (tickUpdate.items[i].name != objectName) 
+                            continue;
+                        
+                        maxStack = tickUpdate.items[i].stackMax;
+                    }
+                    
                     // Check if the item requires breaking delay
                     for (int i=0; i < tickUpdate.breakableItem.Length; i++) {
                         if (tickUpdate.breakableItem[i].name != objectName) 
                             continue;
                         
+                        attackTimer = tickUpdate.breakableItem[i].hardness;
+                        
+                        // Check target class
+                        if (playerTargetItemClass == tickUpdate.breakableItem[i].itemClass) {
+                            
+                            attackTimer -= playerstrikingForce;
+                            
+                        } else {
+                            
+                            // Default target ALL item classes
+                            if (playerTargetItemClass == "") 
+                                attackTimer -= playerstrikingForce;
+                        }
+                        
                         runAttackAnimCycle = true;
                         runPickupAnimCycle = false;
                         
-                        // Apply attack damage timer
-                        attackTimer = tickUpdate.breakableItem[i].hardness - playerAttackDamage;
+                        if (attackTimer < attackTimeout) 
+                            attackTimer = attackTimeout;
+                        
+                        return;
+                    }
+                    
+                    // Check if the item is shatterable
+                    for (int i=0; i < tickUpdate.shatterableItem.Length; i++) {
+                        if (tickUpdate.shatterableItem[i].name != objectName) 
+                            continue;
+                        
+                        attackTimer = tickUpdate.shatterableItem[i].hardness;
+                        
+                        runAttackAnimCycle = true;
+                        runPickupAnimCycle = false;
                         
                         if (attackTimer < attackTimeout) 
                             attackTimer = attackTimeout;
@@ -173,7 +245,7 @@ public class Attack : MonoBehaviour {
                     
                     // Pick up the item
                     Destroy( hit_obj.transform.parent.transform.gameObject );
-                    inventory.addItem(objectName, 1);
+                    inventory.addItem(objectName, 1, maxStack);
                     interfaceScript.updateInHand();
                     
                 } else {
@@ -283,7 +355,7 @@ public class Attack : MonoBehaviour {
                 attackOffsetDirection = true;
             }
             
-            transform.GetChild(0).transform.GetChild(0).transform.GetChild(0).transform.localRotation = Quaternion.Euler(0f, -40f, 0f);
+            transform.GetChild(0).transform.GetChild(0).transform.GetChild(0).transform.localRotation = Quaternion.Euler(0f, -20f, 0f);
             
             transform.GetChild(0).transform.GetChild(0).transform.GetChild(0).transform.localPosition = new Vector3(1.5f - (attackOffset * attackAnimationX ),
                                                                                                                      -1f - (attackOffset * attackAnimationY ), 
@@ -313,7 +385,9 @@ public class Attack : MonoBehaviour {
                 return;
             }
             
-            transform.GetChild(0).transform.GetChild(0).transform.GetChild(0).transform.localPosition = new Vector3(1.5f - (attackOffset * 0.5f), -1f - (attackOffset * -0.2f), 2f + (attackOffset * 1.4f));
+            transform.GetChild(0).transform.GetChild(0).transform.GetChild(0).transform.localPosition = new Vector3(1.5f - (attackOffset * pickupAnimationX),
+                                                                                                                     -1f - (attackOffset * pickupAnimationY),
+                                                                                                                      2f + (attackOffset * pickupAnimationZ));
             
             transform.GetChild(0).transform.GetChild(0).transform.GetChild(0).transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
             

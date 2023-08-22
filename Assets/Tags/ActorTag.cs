@@ -36,7 +36,7 @@ public class ActorTag : MonoBehaviour {
 	[Header("AI personality parameters")]
 	[Space(3)]
     
-	public float chanceToChangeDirection  = 0.3f;
+	public float chanceToChangeDirection  = 0.12f;
 	public float chanceToFocusOnPlayer    = 0.01f;
 	public float chanceToFocusOnEntity    = 0.03f;
 	public float chanceToAttackPlayer     = 0f;

@@ -20,6 +20,7 @@ public class Use : MonoBehaviour {
 	TickUpdate tickUpdate;
 	
 	bool  runConsumeAnimation = false;
+	bool  isConsuming         = false;
 	float consumeOffset;
 	float consumeOffsetWave;
 	bool  consumeOffsetWaveDir = false;
@@ -46,36 +47,60 @@ public class Use : MonoBehaviour {
 	  
 	  if (useCounter > 0) useCounter--;
 	  
-	  
-	  if (Input.GetButton("Use")) {
-	    
-	    string slotName = interfaceScript.inventory.checkSlot();
+	  string slotName = interfaceScript.inventory.checkSlot();
+      
+      // Check if the item is consumable
+      if (Input.GetButtonDown("Use")) {
+        
+	    isConsuming = false;
 	    
 	    for (int i=0; i < tickUpdate.consumableItem.Length; i++) {
             if (tickUpdate.consumableItem[i].name != slotName) 
                 continue;
             
+            isConsuming = true;
+            break;
+	    }
+        
+	  }
+	  
+	  
+	  if (Input.GetButton("Use")) {
+	    
+	    // Check is currently consuming
+        if (isConsuming) {
+            
+            // Check are we full
             if (interfaceScript.inventory.hunger == 10) {
-                
                 resetConsumeAnimation();
-                
                 return;
             }
             
             runConsumeAnimation = true;
             
-            
             if (useCounter == 1) {
                 
-                tickUpdate.HealthRecharge = (tickUpdate.inventory.health * 7);
+                for (int i=0; i < tickUpdate.consumableItem.Length; i++) {
+                    if (tickUpdate.consumableItem[i].name != slotName) 
+                        continue;
+                    
+                    tickUpdate.HealthRecharge = (tickUpdate.inventory.health * 7);
+                    
+                    tickUpdate.inventory.addHunger(tickUpdate.consumableItem[i].hunger);
+                    tickUpdate.inventory.addSaturation(tickUpdate.consumableItem[i].saturation);
+                    
+                    tickUpdate.inventory.removeItem();
+                    interfaceScript.updateInHand();
+                    
+                    resetConsumeAnimation();
+                    isConsuming = false;
+                }
                 
-                tickUpdate.inventory.addHunger(tickUpdate.consumableItem[i].hunger);
-                tickUpdate.inventory.addSaturation(tickUpdate.consumableItem[i].saturation);
-                
-                tickUpdate.inventory.removeItem();
-                interfaceScript.updateInHand();
             }
-            break;
+            
+        } else {
+            
+            resetConsumeAnimation();
         }
 	    
 	    
@@ -144,8 +169,7 @@ public class Use : MonoBehaviour {
 	  
 	  
 	  if (Input.GetButtonUp("Use")) {
-	    
-	    string slotName = interfaceScript.inventory.checkSlot();
+	    resetConsumeAnimation();
 	    
 	    // Reset animation cycle
 	    consumeOffset=0;
@@ -160,7 +184,7 @@ public class Use : MonoBehaviour {
 	    // Check the current slot for a usable object
 	    slotName = interfaceScript.inventory.checkSlot();
 	    
-	    
+	    /*
 	    // Use the bow to shoot an arrow
 	    if (slotName == "bow") {
 	      
@@ -174,7 +198,7 @@ public class Use : MonoBehaviour {
 	      newObject.GetComponent<Rigidbody>().velocity = GameObject.Find("Main Camera").transform.forward * shootForce;
 	      
 	    }
-	    
+	    */
 	    
 	  }
 	  

@@ -29,16 +29,38 @@ public class Drop : MonoBehaviour {
         if (tickUpdate.doShowConsole) return;
         
         
-        if (Input.GetButtonDown("Drop")) {
+        if (Input.GetButtonDown("Place")) {
+            
+            string slotName = interfaceScript.inventory.checkSlot();
+            
+            if (slotName == "") 
+                return;
+            
+            // Check if the item is placeable / breakable
+            bool isPlacable = false;
+            for (int i=0; i < tickUpdate.breakableItem.Length; i++) {
+                if (tickUpdate.breakableItem[i].name != slotName) 
+                    continue;
+                
+                isPlacable = true;
+                break;
+            }
             
             RaycastHit hit_gnd;
             
             Ray ray = cameraObject.ScreenPointToRay(Input.mousePosition);
             
             
+            
+            //
             // Drop object onto an object
+            //
+            
             RaycastHit hit_obj;
             if ( Physics.Raycast(ray, out hit_obj, Distance, DropMask) ) {
+                
+                if (!isPlacable) 
+                    return;
                 
                 float chunk_x = Mathf.Round(hit_obj.point.x / 100) * 100;
                 float chunk_z = Mathf.Round(hit_obj.point.z / 100) * 100;
@@ -49,11 +71,6 @@ public class Drop : MonoBehaviour {
                 
                 string objectName = hit_obj.transform.parent.transform.gameObject.name;
                 
-                string SlotName = interfaceScript.inventory.checkSlot();
-                if (SlotName == "") 
-                    return;
-                
-                
                 // If stack is empty, remove the object from players hand
                 if (interfaceScript.inventory.removeItem() == 0) {
                     
@@ -63,15 +80,11 @@ public class Drop : MonoBehaviour {
                     interfaceScript.updateInHand();
                 }
                 
-                
-                //
                 // Create drop object
-                GameObject newObject = Instantiate( Resources.Load( SlotName )) as GameObject;
-                newObject.name = SlotName;
+                GameObject newObject = Instantiate( Resources.Load( slotName )) as GameObject;
+                newObject.name = slotName;
                 newObject.transform.parent = chunkObject.transform.GetChild(2).transform;
                 
-                
-                //
                 // Calculate target position
                 
                 float offsetX = 0f;
@@ -109,19 +122,17 @@ public class Drop : MonoBehaviour {
             }
             
             
+            
+            //
             // Check to drop directly on the ground
+            //
+            
             if ( Physics.Raycast(ray, out hit_gnd, Distance, GroundMask) ) {
-                
-                string SlotName = interfaceScript.inventory.checkSlot();
-                
-                if (SlotName == "") 
-                    return;
-                
                 
                 //
                 // Empty hand modify terrain
                 /*
-                if (SlotName == "") {
+                if (slotName == "") {
                     
                     ChunkTag chunkTag = hit_gnd.transform.gameObject.GetComponent<ChunkTag>();
                     if (chunkTag == null) return;
@@ -135,10 +146,9 @@ public class Drop : MonoBehaviour {
                 }
                 */
                 
-                
-                
-                
-                
+                // Dont place on ground if its not breakable
+                if (!isPlacable) 
+                    return;
                 
                 
                 //
@@ -151,8 +161,8 @@ public class Drop : MonoBehaviour {
                 if (chunkObject == null) 
                     return;
                 
-                GameObject newObject = Instantiate( Resources.Load( SlotName )) as GameObject;
-                newObject.name = SlotName;
+                GameObject newObject = Instantiate( Resources.Load( slotName )) as GameObject;
+                newObject.name = slotName;
                 Vector3 roundedPosition;
                 roundedPosition.x = Mathf.Round(hit_gnd.point.x);
                 roundedPosition.z = Mathf.Round(hit_gnd.point.z);
@@ -163,28 +173,11 @@ public class Drop : MonoBehaviour {
                 
                 newObject.transform.parent = chunkObject.transform.GetChild(2).transform;
                 
-                /*
-                if (SlotName == "log") {
-                    
-                    ChunkTag chunkTag = chunkObject.transform.GetChild(0).gameObject.GetComponent<ChunkTag>();
-                    if (chunkTag == null) return;
-                    
-                    Renderer staticMeshRenderer = newObject.GetComponent<Renderer>();
-                    if (staticMeshRenderer == null) return;
-                    
-                    //staticMeshRenderer.material.color = tickUpdate.chunkGenerator.biomes[chunkTag.biome].treeWoodColor;
-                }
-                */
-                
-                
                 // If stack is empty, remove the object from players hand
-                if (interfaceScript.inventory.removeItem() == 0) {
-                    
+                if (interfaceScript.inventory.removeItem() == 0) 
                     interfaceScript.updateInHand();
-                    
-                }
                 
-            return;
+                return;
             }
             
             
@@ -193,6 +186,52 @@ public class Drop : MonoBehaviour {
             
         }
         
+        
+        
+        if (Input.GetButtonDown("Drop")) {
+            
+            string slotName = interfaceScript.inventory.checkSlot();
+            
+            if (slotName == "") 
+                return;
+            
+            RaycastHit hit_gnd;
+            
+            Ray ray = cameraObject.ScreenPointToRay(Input.mousePosition);
+            
+            // Check to drop directly on the ground
+            if ( Physics.Raycast(ray, out hit_gnd, Distance, GroundMask) ) {
+                
+                //
+                // Drop item on ground
+                
+                float chunk_x = Mathf.Round(hit_gnd.point.x / 100) * 100;
+                float chunk_z = Mathf.Round(hit_gnd.point.z / 100) * 100;
+                
+                GameObject chunkObject = tickUpdate.chunkGenerator.getChunk(chunk_x, chunk_z);
+                if (chunkObject == null) 
+                    return;
+                
+                GameObject newObject = Instantiate( Resources.Load( slotName )) as GameObject;
+                newObject.name = slotName;
+                Vector3 roundedPosition;
+                roundedPosition.x = Mathf.Round(hit_gnd.point.x);
+                roundedPosition.z = Mathf.Round(hit_gnd.point.z);
+                
+                newObject.transform.Translate( new Vector3(roundedPosition.x, 
+                                                           hit_gnd.point.y + (newObject.transform.localScale.y / 2), 
+                                                           roundedPosition.z) );
+                
+                newObject.transform.parent = chunkObject.transform.GetChild(2).transform;
+                
+                // If stack is empty, remove the object from players hand
+                if (interfaceScript.inventory.removeItem() == 0) 
+                    interfaceScript.updateInHand();
+                
+                return;
+            }
+            
+        }
         
 	}
 	
