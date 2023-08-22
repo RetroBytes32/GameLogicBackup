@@ -880,7 +880,7 @@ public class ChunkGeneration : MonoBehaviour {
             
             GameObject staticObject;
             staticObject = Instantiate( Resources.Load( biomes[biomeIndex].treeSpawn[tree_type].leafName )) as GameObject;
-            staticObject.name = biomes[biomeIndex].treeSpawn[tree_type].name;
+            staticObject.name = biomes[biomeIndex].treeSpawn[tree_type].leafName;
             
             staticObject.transform.parent = chunk.transform.GetChild(2).transform;
             
@@ -909,9 +909,9 @@ public class ChunkGeneration : MonoBehaviour {
                 
             } else {
                 
-                offsetX = leafSpread +  Random.Range(0f, leafSpreadMul) - Random.Range(0f, leafSpreadMul);
-                offsetY = leafHeight + (Random.Range(0f, leafHeightMul) - Random.Range(0f, leafHeightMul)) + stackOffset;
-                offsetZ = leafSpread +  Random.Range(0f, leafSpreadMul) - Random.Range(0f, leafSpreadMul);
+                offsetX =  Random.Range(0f, leafSpreadMul) - Random.Range(0f, leafSpreadMul);
+                offsetY = (Random.Range(0f, leafHeightMul) - Random.Range(0f, leafHeightMul)) + leafHeight + stackOffset;
+                offsetZ =  Random.Range(0f, leafSpreadMul) - Random.Range(0f, leafSpreadMul);
             }
             
             staticObject.transform.Translate(x - 50f + offsetX, y + (staticObject.transform.localScale.y / 2.25f) + offsetY, z - 50f + offsetZ);

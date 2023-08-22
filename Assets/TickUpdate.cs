@@ -31,6 +31,12 @@ public struct BreakableItem {
 }
 
 [System.Serializable]
+public struct ShatterableItem {
+    public string     name;
+    public int        hardness;
+}
+
+[System.Serializable]
 public struct WeaponItem {
     public string     name;
 	public int        attackDamage;
@@ -112,7 +118,7 @@ public class TickUpdate : MonoBehaviour {
 	[Space(5)]
     
 	public int   RenderDistance      = 4;
-	public float StaticDistance      = 0.6f;
+	public float StaticDistance      = 0.8f;
 	public float EntityDistance      = 0.2f;
     
     
@@ -164,6 +170,14 @@ public class TickUpdate : MonoBehaviour {
 	[Space(5)]
     
     public BreakableItem[] breakableItem;
+    
+    
+    
+    [Space(10)]
+	[Header("Shatterable items")]
+	[Space(5)]
+    
+    public ShatterableItem[] shatterableItem;
     
     
     
@@ -624,7 +638,7 @@ public class TickUpdate : MonoBehaviour {
 	// Update world chunks
 	void updateChunks() {
         
-        for (int i=0; i < 10; i++) {
+        for (int i=0; i < 13; i++) {
             
             if (ChunkCounter >= ChunkList.transform.childCount) {
                 ChunkCounter = 0;
@@ -863,6 +877,14 @@ public class TickUpdate : MonoBehaviour {
             
             if (entityTag.useAI)
                 actorTag.updateAI();
+            
+            // No AI attack in debug mode
+            if (doDebugMode) {
+                if (actorTag.targetEntity == Player) 
+                    actorTag.targetEntity = null;
+                
+                actorTag.isAttacking = false;
+            }
             
             if (!entityObject.activeInHierarchy)
                 entityObject.SetActive(true);
