@@ -224,7 +224,7 @@ Transform:
   m_GameObject: {fileID: 4654650806994999271}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.5, y: 1, z: 0.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 8498018096257186444}
   - {fileID: 6596673446844897803}
@@ -248,13 +248,13 @@ LODGroup:
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
   m_LODs:
-  - screenRelativeHeight: 0.075686395
+  - screenRelativeHeight: 0.005038783
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 4654650806993062181}
     - renderer: {fileID: 4654650806993062177}
     - renderer: {fileID: 4654650806993062179}
-  - screenRelativeHeight: 0.0052167163
+  - screenRelativeHeight: 0.00035496254
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 6596673446842996971}
@@ -316,7 +316,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 470d49fbb9ef65b43a54446d5068b3e2, type: 2}
+  - {fileID: 2100000, guid: 47f75b88e0e026b4d85bc4edd40e3d43, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

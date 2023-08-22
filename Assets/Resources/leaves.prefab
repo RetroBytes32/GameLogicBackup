@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5505884297873850600}
   - component: {fileID: 5505884297872556232}
   - component: {fileID: 5505884297871557128}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: leaves
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -57,7 +57,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 5d3b3d263e029894eab16904c0202672, type: 2}
+  - {fileID: 2100000, guid: 2cc8eba0607e77b43bf7fa49f28c7f72, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
