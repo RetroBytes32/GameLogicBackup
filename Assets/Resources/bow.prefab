@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 33739063644473200}
   - component: {fileID: 23941670106672668}
   - component: {fileID: 54883116627601684}
+  - component: {fileID: 5154717001023786270}
   m_Layer: 12
   m_Name: bow
   m_TagString: Untagged
@@ -96,6 +97,19 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &5154717001023786270
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1996457902840754}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6c3293a4f007b54f88bee21fb8a35bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  data: 
 --- !u!1 &8028700711669970168
 GameObject:
   m_ObjectHideFlags: 0

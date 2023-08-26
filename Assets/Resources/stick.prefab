@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4324530880720992}
   - component: {fileID: 33277164121433418}
   - component: {fileID: 23986753003995762}
+  - component: {fileID: 1368804169866116250}
   m_Layer: 12
   m_Name: stick
   m_TagString: Untagged
@@ -78,6 +79,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &1368804169866116250
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1893127350443984}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6c3293a4f007b54f88bee21fb8a35bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  data: 
 --- !u!1 &880490729873277894
 GameObject:
   m_ObjectHideFlags: 0

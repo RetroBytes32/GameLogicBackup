@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4356828577343424}
   - component: {fileID: 33185185354112948}
   - component: {fileID: 23132282625393718}
+  - component: {fileID: 2972814794744089200}
   m_Layer: 12
   m_Name: ore_coal
   m_TagString: Untagged
@@ -78,6 +79,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &2972814794744089200
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1289535252357972}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6c3293a4f007b54f88bee21fb8a35bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  data: 
 --- !u!1 &5420253363269905876
 GameObject:
   m_ObjectHideFlags: 0

@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4445315119153022}
   - component: {fileID: 33956515963584370}
   - component: {fileID: 23205248004408942}
+  - component: {fileID: 118107573271015505}
   m_Layer: 12
   m_Name: gold_bar
   m_TagString: Untagged
@@ -78,6 +79,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &118107573271015505
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1546953331169224}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6c3293a4f007b54f88bee21fb8a35bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  data: 
 --- !u!1 &8068800633460277624
 GameObject:
   m_ObjectHideFlags: 0

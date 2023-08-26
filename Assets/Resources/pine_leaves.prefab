@@ -55,6 +55,8 @@ GameObject:
   - component: {fileID: 8524669276612863533}
   - component: {fileID: 8524669276609996301}
   - component: {fileID: 8524669276611093709}
+  - component: {fileID: 7776238782910812257}
+  - component: {fileID: 3790691267095126977}
   m_Layer: 12
   m_Name: pine_leaves
   m_TagString: Untagged
@@ -122,3 +124,35 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!205 &7776238782910812257
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8524669276613097997}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: -0.0061500072, y: -1.13437, z: 0.19009995}
+  m_Size: 6.6705
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.0026730946
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 8524669276611093709}
+  m_Enabled: 1
+--- !u!114 &3790691267095126977
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8524669276613097997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6c3293a4f007b54f88bee21fb8a35bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  data: 
