@@ -41,6 +41,7 @@ public struct WeaponItem {
     public string     name;
 	public int        attackDamage;
 	public int        strikingForce;
+	public int        durability;
 	public string     targetItemClass;
 }
 
@@ -242,19 +243,15 @@ public class TickUpdate : MonoBehaviour {
     
     
 	//
-	// Loading counters
+	// Chunk loading / saving counters
 	//
     
 	float currentLoadingX;
 	float currentLoadingZ;
     
-    
 	int ChunkCounterX=0;
 	int ChunkCounterZ=0;
     
-	int ChunkLoadDirection=0;
-    
-    // Chunk processing
 	int ChunkCounter=0;
     
 	// Static object processing
@@ -272,16 +269,25 @@ public class TickUpdate : MonoBehaviour {
     
     
     
-	
+    
+    
+    
+	//
+	// Tick update core
+	//
 	
 	void Update() {
         
-        if (Input.GetKeyDown(KeyCode.BackQuote)) {
+        //
+        // Command console
+        
+        if (Input.GetKeyDown(KeyCode.Slash)) {
             if (isPaused) 
                 return;
             
             if (doShowConsole) {
                 
+                // Show the console
                 GameObject consoleTextFieldObject = CommandConsole.transform.GetChild(0).GetChild(0).gameObject;
                 consoleTextFieldObject.SetActive(false);
                 
@@ -292,6 +298,8 @@ public class TickUpdate : MonoBehaviour {
                 Cursor.visible = false;
                 
             } else {
+                
+                // Hide the console
                 doShowConsole = true;
                 doMouseLook = false;
                 
@@ -310,7 +318,9 @@ public class TickUpdate : MonoBehaviour {
             
         }
         
+        //
         // Process console commands
+        
         if (doShowConsole) {
             if (Input.GetKeyDown(KeyCode.Return)) {
                 
@@ -340,7 +350,9 @@ public class TickUpdate : MonoBehaviour {
             }
         }
         
-        // ESCAPE key
+        //
+        // Pause menu
+        
         if (Input.GetKeyDown(KeyCode.Escape)) {
             
             isPaused = !isPaused;
@@ -375,10 +387,11 @@ public class TickUpdate : MonoBehaviour {
         }
         
         
-        // Update chunks while paused
+        // Load / save chunks quicker when paused
         if (isPaused) {
             
             unloadChunks();
+            
             loadChunks();
             
             updateChunks();
@@ -387,16 +400,19 @@ public class TickUpdate : MonoBehaviour {
         }
         
         
+        //
+        // Cycle the day and night
         if (doDayNightCycle)
             updateDayNightCycle();
         
         
-        // Check to generate new chunks
-        loadTimeOut++;
-        if (loadTimeOut > 4) {
+        //
+        // Generate or load chunks
+        loadTimeOut--;
+        if (loadTimeOut < 0) {
             
             if (loadChunks())
-                loadTimeOut=0;
+                loadTimeOut = Random.Range(3, 12);
             
         }
         
@@ -404,7 +420,6 @@ public class TickUpdate : MonoBehaviour {
         
         //
         // Console count down timer fade
-        //
         
         if (CommandConsoleTimer > -80) {
             
@@ -415,7 +430,7 @@ public class TickUpdate : MonoBehaviour {
                 
                 CommandConsoleTimer = 0;
                 
-                CommandConsoleFade -= 0.005f;
+                CommandConsoleFade -= 0.008f;
                 
                 Text       consoleLine  = CommandConsole.transform.GetChild(0).GetChild(1).GetChild(1).GetComponent<Text>();
                 Image      consoleBack  = CommandConsole.transform.GetChild(0).GetChild(1).GetChild(0).GetComponent<Image>();
@@ -445,7 +460,7 @@ public class TickUpdate : MonoBehaviour {
         
         
         //
-        // Base tick counter
+        // Master world tick counter
         //
         
         BaseCounter += Time.deltaTime / ((float)TickRate);
@@ -455,7 +470,7 @@ public class TickUpdate : MonoBehaviour {
             
             unloadChunks();
             
-            //updateStaticObjects();
+            updateStaticObjects();
             
             
             //
@@ -591,21 +606,21 @@ public class TickUpdate : MonoBehaviour {
         
         //
         // Camera damage indication animation cycle
-    
+        
         if (runCameraDamageAnimation) {
+            
+            if (damageIndicationOffset == -1f) 
+                damageIndicationOffset = 5f;
+            
+            if (damageIndicationOffset > 0) {
+                damageIndicationOffset -= 1f;
+            } else {
                 
-                if (damageIndicationOffset == -1f) 
-                    damageIndicationOffset = 5f;
+                damageIndicationOffset = -1f;
+                runCameraDamageAnimation = false;
                 
-                if (damageIndicationOffset > 0) {
-                    damageIndicationOffset -= 1f;
-                } else {
-                    
-                    damageIndicationOffset = -1f;
-                    runCameraDamageAnimation = false;
-                    
-                }
-                
+            }
+            
         }
         
         //
@@ -634,15 +649,21 @@ public class TickUpdate : MonoBehaviour {
 	
 	
 	
+	
+	
+	
 	//
 	// Update world chunks
+	//
+	
 	void updateChunks() {
         
-        for (int i=0; i < 13; i++) {
+        int numberOfChunksPerTick = 40;
+        
+        for (int i=0; i < numberOfChunksPerTick; i++) {
             
-            if (ChunkCounter >= ChunkList.transform.childCount) {
+            if (ChunkCounter >= ChunkList.transform.childCount) 
                 ChunkCounter = 0;
-            }
             
             GameObject chunkObject = ChunkList.transform.GetChild(ChunkCounter).gameObject;
             GameObject staticList  = chunkObject.transform.GetChild(2).gameObject;
@@ -699,91 +720,65 @@ public class TickUpdate : MonoBehaviour {
 	
 	
 	
+	//
+	// Update static objects
+	//
 	
 	public void updateStaticObjects() {
         
         if (staticChunkCounter >= ChunkList.transform.childCount)
-        staticChunkCounter = 0;
+            staticChunkCounter = 0;
         
         GameObject chunkObject = ChunkList.transform.GetChild(staticChunkCounter).gameObject;
         GameObject staticList  = chunkObject.transform.GetChild(2).gameObject;
         
-        for (int i=0; i < 80; i++) {
+        int numberOfObjectsPerTick = 80;
         
-        staticCounter++;
-        
-        if (staticCounter >= staticList.transform.childCount) {
+        for (int i=0; i < numberOfObjectsPerTick; i++) {
             
-            staticCounter=-1;
+            staticCounter++;
             
-            staticChunkCounter++;
+            if (staticCounter >= staticList.transform.childCount) {
+                
+                staticCounter=-1;
+                
+                staticChunkCounter++;
+                
+                // Check last chunk
+                if (staticChunkCounter >= ChunkList.transform.childCount)
+                staticChunkCounter = 0;
+                
+                chunkObject = ChunkList.transform.GetChild(staticChunkCounter).gameObject;
+                staticList  = chunkObject.transform.GetChild(2).gameObject;
+                
+                continue;
+            }
             
-            // Check last chunk
-            if (staticChunkCounter >= ChunkList.transform.childCount)
-            staticChunkCounter = 0;
             
-            chunkObject = ChunkList.transform.GetChild(staticChunkCounter).gameObject;
-            staticList  = chunkObject.transform.GetChild(2).gameObject;
+            //
+            // Check chunk distance
+            
+            float totalDistance = ((float)RenderDistance * StaticDistance) * 100f;
+            
+            Vector3 playerPos = Player.transform.position;
+            Vector3 chunkPos  = chunkObject.transform.position;
+            
+            playerPos.y = 0f;
+            chunkPos.y  = 0f;
+            
+            if (Vector3.Distance(chunkPos, playerPos) > totalDistance) {
+                
+                staticCounter = -1;
+                staticChunkCounter++;
+                staticList.SetActive(false);
+                
+                continue;
+            } else {
+                
+                staticList.SetActive(true);
+            }
             
             continue;
-        }
-        
-        
-        //
-        // Check chunk distance
-        
-        //float totalDistance = ((float)RenderDistance) * 100f;
-        float totalDistance = ((float)RenderDistance * StaticDistance) * 100f;
-        
-        Vector3 playerPos = Player.transform.position;
-        Vector3 chunkPos  = chunkObject.transform.position;
-        
-        playerPos.y = 0f;
-        chunkPos.y  = 0f;
-        
-        if (Vector3.Distance(chunkPos, playerPos) > totalDistance) {
-            
-            staticCounter = -1;
-            
-            staticChunkCounter++;
-            
-            staticList.SetActive(false);
-            
-            continue;
-        } else {
-            
-            staticList.SetActive(true);
-        
-        }
-        
-        
-        /*
-        
-        //
-        // Check static object distance
-        
-        GameObject staticObject = staticList.transform.GetChild(staticCounter).gameObject;
-        if (staticObject == null) continue;
-        
-        Vector3 staticPos = staticObject.transform.position;
-        
-        staticPos.y = 0f;
-        
-        
-        if (Vector3.Distance(staticPos, playerPos) > totalDistance) {
-            
-            if (staticObject.activeInHierarchy)
-            staticObject.SetActive(false);
-            
-        } else {
-            
-            if (!staticObject.activeInHierarchy)
-            staticObject.SetActive(true);
-            
-        }
-        */
-        
-        continue;
         }
         
         
@@ -812,7 +807,9 @@ public class TickUpdate : MonoBehaviour {
         GameObject chunkObject = ChunkList.transform.GetChild(EntityChunkCounter).gameObject;
         GameObject entityList  = chunkObject.transform.GetChild(1).gameObject;
         
-        for (int i=0; i < 100; i++) {
+        int numberOfEntitiesPerTick = 100;
+        
+        for (int i=0; i < numberOfEntitiesPerTick; i++) {
             
             EntityCounter++;
             
@@ -894,10 +891,12 @@ public class TickUpdate : MonoBehaviour {
             entityTag.physicsUpdate();
             
             
-            // Update entity genetics tag (too slow for production)
+            // Update entity genetics tag
             GeneTag geneTag = entityObject.GetComponent<GeneTag>();
-            geneTag.updateGenetics();
-            
+            if (geneTag.doUpdateGenetics) {
+                geneTag.updateGenetics();
+                geneTag.doUpdateGenetics = false;
+            }
             
             //
             // Calibrate the entity with the chunk on which it stands
@@ -937,6 +936,7 @@ public class TickUpdate : MonoBehaviour {
         
         if (chunkSerializer.isLoading) return false;
         
+        // Check to finalize a loaded chunk
         if (chunkSerializer.isChunkFinalized == true) {
             
             if (loadCounter > 1) {
@@ -949,11 +949,13 @@ public class TickUpdate : MonoBehaviour {
             
         }
         
+        // Start loading a chunk
         if (chunkSerializer.isChunkLoaded) {
             
             if (loadCounter > 1) {
-                chunkSerializer.chunkBuild();
                 loadCounter = 0;
+                
+                chunkSerializer.chunkBuild();
             } else {
                 loadCounter++;
                 return false;
@@ -964,73 +966,62 @@ public class TickUpdate : MonoBehaviour {
         if (chunkSerializer.isChunkFinalized == true) 
             return false;
         
-        playerChunkX = Mathf.Round(Player.transform.position.x / 100) * 100;
-        playerChunkZ = Mathf.Round(Player.transform.position.z / 100) * 100;
+        bool canLoadChunk = false;
         
-        // Check chunks nearby and outward
+        // Chunk load counter
         ChunkCounterX++;
-        if (ChunkCounterX >= RenderDistance) {
+        if (ChunkCounterX > (RenderDistance * 2)) {
             
             ChunkCounterX = 0;
             
             ChunkCounterZ++;
-            if (ChunkCounterZ >= RenderDistance) {
-                
-                ChunkLoadDirection++;
-                if (ChunkLoadDirection > 3) 
-                    ChunkLoadDirection = 0;
+            if (ChunkCounterZ > (RenderDistance * 2)) {
                 
                 ChunkCounterZ = 0;
             }
         }
         
         
-        float nextChunkX = 0;
-        float nextChunkZ = 0;
-        bool canLoadChunk = false;
+        // Load chunks in the background
+        playerChunkX = Mathf.Round(Player.transform.position.x / 100) * 100;
+        playerChunkZ = Mathf.Round(Player.transform.position.z / 100) * 100;
         
-        if (ChunkLoadDirection == 0) {
-            nextChunkX = playerChunkX + (ChunkCounterX * 100);
-            nextChunkZ = playerChunkZ + (ChunkCounterZ * 100);
-        }
-        if (ChunkLoadDirection == 1) {
-            nextChunkX = playerChunkX - (ChunkCounterX * 100);
-            nextChunkZ = playerChunkZ - (ChunkCounterZ * 100);
-        }
-        if (ChunkLoadDirection == 2) {
-            nextChunkX = playerChunkX - (ChunkCounterX * 100);
-            nextChunkZ = playerChunkZ + (ChunkCounterZ * 100);
-        }
-        if (ChunkLoadDirection == 3) {
-            nextChunkX = playerChunkX + (ChunkCounterX * 100);
-            nextChunkZ = playerChunkZ - (ChunkCounterZ * 100);
-        }
+        float currentPlayerChunkCheckX = (((ChunkCounterX * 100) + playerChunkX)) - (RenderDistance * 100);
+        float currentPlayerChunkCheckZ = (((ChunkCounterZ * 100) + playerChunkZ)) - (RenderDistance * 100);
         
-        // Check nearby chunks first
-        for (int x=0; x < 3; x++) {
-            for (int z=0; z < 3; z++) {
-                
-                float currentPlayerChunkCheckX = ((int)playerChunkX - 100) + (100 * x);
-                float currentPlayerChunkCheckZ = ((int)playerChunkZ - 100) + (100 * z);
-                
-                if (checkChunkFree(currentPlayerChunkCheckX, currentPlayerChunkCheckZ)) {
-                    nextChunkX = currentPlayerChunkCheckX;
-                    nextChunkZ = currentPlayerChunkCheckZ;
-                    break;
-                }
-            }
-        }
-        
-        // Check chunk for processing
-        if (checkChunkFree(nextChunkX, nextChunkZ)) {
-            currentLoadingX = nextChunkX;
-            currentLoadingZ = nextChunkZ;
-            
+        if (checkChunkFree(currentPlayerChunkCheckX, currentPlayerChunkCheckZ)) {
+            currentLoadingX = currentPlayerChunkCheckX;
+            currentLoadingZ = currentPlayerChunkCheckZ;
             canLoadChunk = true;
+        } else {
+            
+            // Check nearby chunks first
+            for (int x=0; x < 3; x++) {
+                for (int z=0; z < 3; z++) {
+                    
+                    float currentCheckX = ((x * 100) + playerChunkX) - 100;
+                    float currentCheckZ = ((z * 100) + playerChunkZ) - 100;
+                    
+                    if (checkChunkFree(currentCheckX, currentCheckZ)) {
+                        currentLoadingX = currentCheckX;
+                        currentLoadingZ = currentCheckZ;
+                        canLoadChunk = true;
+                        break;
+                    }
+                    
+                }
+                
+                if (canLoadChunk) break;
+            }
+            
         }
+        
+        
         
         // Check if the chunk can be loaded from disk
-        if (canLoadChunk == false) return false;
+        if (canLoadChunk == false) 
+            return false;
+        
         if (chunkSerializer.chunkExists(currentLoadingX, currentLoadingZ)) {
             
             // Generate a dummy chunk
@@ -1068,12 +1059,12 @@ public class TickUpdate : MonoBehaviour {
 	
 	
 	//
-	// Check to unload nearby chunks
+	// Check to unload far away chunks
+	//
+	
 	public void unloadChunks() {
         
-        //
-        // Check old chunks for unloading
-        
+        // Finalize if chunk is finished saving
         if ((!chunkSerializer.isSaving) & (chunkSerializer.isChunkSaved)) {
             Destroy(chunkSerializer.saving_chunk);
             chunkSerializer.isChunkSaved = false;
@@ -1083,7 +1074,7 @@ public class TickUpdate : MonoBehaviour {
         
         if ((!chunkSerializer.isSaving) & (!chunkSerializer.isChunkSaved)) {
             
-            float totalRenderDistance  = RenderDistance * 100 * 2f;
+            float totalRenderDistance  = RenderDistance * 100f * 2f;
             
             for(int i = 0; i < ChunkList.transform.childCount; i++) {
                 
@@ -1092,14 +1083,15 @@ public class TickUpdate : MonoBehaviour {
                 Vector3 chunk_pos  = new Vector3(chunkObject.transform.position.x, 0f, chunkObject.transform.position.z);
                 Vector3 player_pos = new Vector3(Player.transform.position.x, 0f, Player.transform.position.z);
                 
-                // Destroy old chunks
                 if (Vector3.Distance(chunk_pos, player_pos) > totalRenderDistance) {
                     
+                    // Save bypass for debugging
                     if (!doSaveChunks) {
                         Destroy(chunkObject);
                         continue;
                     }
                     
+                    // Begin saving chunk
                     chunkSerializer.chunkSaveStart(chunkObject, chunkObject.transform.position.x, chunkObject.transform.position.z);
                     
                     break;
@@ -1119,6 +1111,10 @@ public class TickUpdate : MonoBehaviour {
 	
 	
 	
+	//
+	// Day / night cycle
+	//
+	
 	void updateDayNightCycle() {
         
         dayNightCycleCurrent += dayNightCycleRate * Time.deltaTime;
@@ -1128,7 +1124,7 @@ public class TickUpdate : MonoBehaviour {
         sun.transform.localRotation = Quaternion.Euler(new Vector3(dayNightCycleCurrent - 10.0f, dayNightCycleAngle, 0f));
         
         
-        // Day fog cycle
+        // Day cycle
         if ((dayNightCycleCurrent > 0.0f) | (dayNightCycleCurrent < 180.0f)) {
             
             float lerp_intensity = 0.1f * dayNightCycleCurrent;
@@ -1155,7 +1151,7 @@ public class TickUpdate : MonoBehaviour {
             
         }
         
-        // Night fog cycle
+        // Night cycle
         if ((dayNightCycleCurrent > 180.0f) & (dayNightCycleCurrent < 360.0f)) {
             
             float lerp_intensity = 0.1f * (dayNightCycleCurrent - 180.0f);
@@ -1200,8 +1196,10 @@ public class TickUpdate : MonoBehaviour {
 	
 	
 	
+	//
+	// Entity genetic breeding
+	//
 	
-	// Summon entity offspring
 	public void joinGeneticPair() {
         
         if ((gene_m == null) | (gene_p == null)) 
@@ -1308,6 +1306,9 @@ public class TickUpdate : MonoBehaviour {
     
     
     
+    //
+    // Change a point in the terrain and update the edges
+    // Can be useful for stitching the chunk edges
     
 	public GameObject update_nearby_chunks(float point_x, float point_z, ChunkTag chunkTag, float terrain_damage) {
         
@@ -1493,7 +1494,6 @@ public class TickUpdate : MonoBehaviour {
             joinChunkTag.update_mesh();
         }
         
-        
         chunkTag.vertex_grid[(int)target_x,   (int)target_z]   += terrain_damage;
         chunkTag.vertex_grid[(int)target_x+1, (int)target_z]   += terrain_damage;
         chunkTag.vertex_grid[(int)target_x,   (int)target_z+1] += terrain_damage;
@@ -1513,9 +1513,16 @@ public class TickUpdate : MonoBehaviour {
     
     
     
+    
+    
+    
+    
+    
 	
 	//
-	// Initiate world loading
+	// Initiate world before loading
+	//
+	
 	public void initiateWorld() {
         
         //
@@ -1559,13 +1566,9 @@ public class TickUpdate : MonoBehaviour {
         inventory.setHunger( 8 );
         inventory.setSaturation( 100 );
         
-        // Reactive hunger and health bars
+        // Reactivate hunger and health bars
         HUD.transform.GetChild(5).gameObject.SetActive(true);
         HUD.transform.GetChild(6).gameObject.SetActive(true);
-        
-        
-        // Reset animations
-        runCameraDamageAnimation = false;
         
         
         // Load world data and check client version
@@ -1579,9 +1582,7 @@ public class TickUpdate : MonoBehaviour {
         Player.transform.Translate(worldSpawn.x, -100f, worldSpawn.z);
         reset_player = true;
         
-        
         chunkGenerator.initiate();
-        
         
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -1591,6 +1592,9 @@ public class TickUpdate : MonoBehaviour {
         doMouseLook        = true;
         
         Time.timeScale = 1f;
+        
+        // Reset animations
+        runCameraDamageAnimation = false;
         
         // Set the time of day
         if (!success) 
@@ -1620,13 +1624,17 @@ public class TickUpdate : MonoBehaviour {
         
         
         //
-        // Load first chunks
-        for (int z=0; z < 4; z++) {
+        // Load first few surrounding chunks
+        
+        int numberOfChunksHorz = 3;
+        int numberOfChunksVert = 3;
+        
+        for (int z=0; z < numberOfChunksVert; z++) {
             
-            for (int x=0; x < 4; x++) {
+            for (int x=0; x < numberOfChunksHorz; x++) {
                 
-                currentLoadingX = (((x * 100) + playerChunkX)) - (2 * 100);
-                currentLoadingZ = (((z * 100) + playerChunkZ)) - (2 * 100);
+                currentLoadingX = (((x * 100) + playerChunkX)) - 100;
+                currentLoadingZ = (((z * 100) + playerChunkZ)) - 100;
                 
                 // Check if the chunk exists on disk
                 if (chunkSerializer.chunkExists(currentLoadingX, currentLoadingZ)) {
@@ -1645,7 +1653,7 @@ public class TickUpdate : MonoBehaviour {
                     if (Vector3.Distance(Player.transform.position, generated_chunk.transform.position) < (RenderDistance * StaticDistance * 100f))
                     generated_chunk.transform.GetChild(2).gameObject.SetActive(true);
                     
-                    
+                // Else generate a new chunk
                 } else {
                     
                     GameObject generated_chunk = chunkGenerator.generateChunk(currentLoadingX, currentLoadingZ, 100, chunkGenerator.addWorldDecorations, false);
@@ -1669,6 +1677,9 @@ public class TickUpdate : MonoBehaviour {
     
     
     
+    //
+    // Clear out and close the currently loaded world
+    //
     
     public void purgeWorld() {
         
@@ -1715,7 +1726,14 @@ public class TickUpdate : MonoBehaviour {
     
     
     
+	
+	
+	
+	
+	//
 	// Save currently loaded chunks
+	//
+	
 	public void saveWorld() {
         
         for(int i = 0; i < ChunkList.transform.childCount; i++) {
@@ -1840,6 +1858,7 @@ public class TickUpdate : MonoBehaviour {
             case "summon":      return consoleSummon(paramaters);
             case "give":        return consoleGive(paramaters);
             case "set":         return consoleRule(paramaters);
+            case "time":        return consoleTime(paramaters);
             case "tp":          return consoleTP(paramaters);
             
         }
@@ -1904,7 +1923,15 @@ public class TickUpdate : MonoBehaviour {
         for (int i=0; i < items.Length; i++) {
             if (items[i].name == itemName) {
                 
-                inventory.addItem(itemName, itemCount, items[i].stackMax);
+                // Get weapon durability
+                int durability=-1;
+                for (int a=0; a < weaponItem.Length; a++) {
+                    if (weaponItem[a].name != itemName) 
+                        continue;
+                    durability = weaponItem[a].durability;
+                }
+                
+                inventory.addItem(itemName, itemCount, items[i].stackMax, durability);
                 
                 hudInterface.updateInHand();
                 
@@ -2002,7 +2029,7 @@ public class TickUpdate : MonoBehaviour {
                 
                 Vector3 newPosition;
                 newPosition.x = Player.transform.position.x;
-                newPosition.y = Player.transform.position.y;
+                newPosition.y = Player.transform.position.y + 0.5f;
                 newPosition.z = Player.transform.position.z;
                 
                 newPosition += chunkGenerator.structures[i].items[a].position;
@@ -2016,6 +2043,58 @@ public class TickUpdate : MonoBehaviour {
         }
         
         return "Structure not found '"+paramaters[1]+"'";
+    }
+    
+    
+    
+    //
+    // Time
+    //
+    
+    string consoleTime(string[] paramaters) {
+        
+        string func="";
+        if (paramaters.Length > 1) 
+            func = paramaters[1];
+        
+        string status="";
+        if (paramaters.Length > 2) 
+            status = paramaters[2];
+        
+        if (paramaters.Length < 2) 
+            return "Cannot generate structure";
+        
+        if (func == "set") {
+            
+            switch (status) {
+                    
+                case "day":
+                    dayNightCycleCurrent = 30f;
+                    updateDayNightCycle();
+                    return "Time set to day";
+                    
+                case "night":
+                    dayNightCycleCurrent = 185f;
+                    updateDayNightCycle();
+                    return "Time set to night";
+                    
+                case "midnight":
+                    dayNightCycleCurrent = 280f;
+                    updateDayNightCycle();
+                    return "Time set to night";
+                    
+                case "noon":
+                    dayNightCycleCurrent = 100f;
+                    updateDayNightCycle();
+                    return "Time set to night";
+                    
+                default:
+                    break;
+            }
+            
+        }
+        
+        return "Time function not recognized";
     }
     
     

@@ -159,6 +159,7 @@ public class TreeSpawn {
 	[Space(5)]
 	
     public string leafName;
+    public Color  leafColor;
     
     public int    leafDensity;
     
@@ -288,9 +289,9 @@ public class ChunkGeneration : MonoBehaviour {
     
     
     
-    
-    
-    
+    //
+    // Chunk generation core
+    //
     
 	public GameObject generateChunk(float chunk_x, float chunk_z, float chunk_sz, bool addStaticObjects, bool dummyChunk) {
         
@@ -332,6 +333,7 @@ public class ChunkGeneration : MonoBehaviour {
         // Generate water table
         
         GameObject waterTableObject = Instantiate( Resources.Load( "WaterTable" )) as GameObject;
+        waterTableObject.transform.name = "water";
         waterTableObject.transform.parent = currentChunk.transform;
         waterTableObject.transform.position = new Vector3(currentChunk.transform.position.x, -0.7f, currentChunk.transform.position.z);
         
@@ -711,50 +713,45 @@ public class ChunkGeneration : MonoBehaviour {
 	
 	
 	public void initiate() {
-
-
+        
         //
         // Generate biome material groups
         //
         
         
-        
-        // Create tree log base material
+        // Water table
         GameObject waterBase  = MonoBehaviour.Instantiate( Resources.Load( "WaterTable" )) as GameObject;
         Renderer   waterBaseRenderer = waterBase.GetComponent<Renderer>();
         
         waterBase.transform.parent  = gameRules.transform;
         waterBase.transform.position = new Vector3(0f, -1000f, 0f);
         
-        waterBase.name      = "water_material";
+        waterBase.name      = "water";
         Material mat_water  = waterBaseRenderer.material;
         mat_water.color     = WaterColor;
         
         
         
-        // Biome
+        // Create biome material groups
+        /*
         for (int i=0; i < biomes.Length; i++) {
             
             GameObject biomeObject = new GameObject();
             biomeObject.name = biomes[i].name;
             biomeObject.transform.parent = gameRules.transform;
             
-            
-            // Entity materials
-            for (int a=0; a < biomes[i].entities.Length; a++) {
+            //for (int a=0; a < biomes[i].treeSpawn.Length; a++) {
                 
-                GameObject entityObject = new GameObject();
-                entityObject.name = biomes[i].entities[a].name;
-                entityObject.transform.parent = biomeObject.transform;
+                //GameObject entityObject = new GameObject();
+                //entityObject.name = biomes[i].treeSpawn[a].name;
+                //entityObject.transform.parent = biomeObject.transform;
                 
-            }
+                //leafColor
+                
+            //}
             
         }
-        
-        
-        
-        
-        
+        */
         
         
         //
@@ -898,6 +895,19 @@ public class ChunkGeneration : MonoBehaviour {
             
             if (biomes[biomeIndex].treeSpawn[tree_type].scaleAndStagger) {
                 
+                // Translation offset from height
+                offsetY = stackHeight + leafHeight + (i * leafHeightMul);
+                
+                staticObject.transform.Translate(x - 50f + offsetX, y + (staticObject.transform.localScale.y / 2.25f) + offsetY, z - 50f + offsetZ);
+                
+                // Random rotation
+                float rotationX = 0f;
+                float rotationY = Random.Range(0f, 360f) - Random.Range(0f, 360f);
+                float rotationZ = 0f;
+                
+                staticObject.transform.localRotation = Quaternion.Euler(rotationX, rotationY, rotationZ);
+                
+                // Stagger the scale
                 Vector3 newScale;
                 newScale.x = leafSpread + staticObject.transform.localScale.x * (i * leafSpreadMul);
                 newScale.y = 1f;
@@ -905,16 +915,24 @@ public class ChunkGeneration : MonoBehaviour {
                 
                 staticObject.transform.localScale = newScale;
                 
-                offsetY = stackHeight + leafHeight + (i * leafHeightMul);
                 
             } else {
                 
+                // Random translation offset
                 offsetX =  Random.Range(0f, leafSpreadMul) - Random.Range(0f, leafSpreadMul);
                 offsetY = (Random.Range(0f, leafHeightMul) - Random.Range(0f, leafHeightMul)) + leafHeight + stackOffset;
                 offsetZ =  Random.Range(0f, leafSpreadMul) - Random.Range(0f, leafSpreadMul);
+                
+                staticObject.transform.Translate(x - 50f + offsetX, y + (staticObject.transform.localScale.y / 2.25f) + offsetY, z - 50f + offsetZ);
+                
+                // Random rotation
+                float rotationX = 0f;
+                float rotationY = Random.Range(0f, 360f) - Random.Range(0f, 360f);
+                float rotationZ = 0f;
+                
+                staticObject.transform.localRotation = Quaternion.Euler(rotationX, rotationY, rotationZ);
+                
             }
-            
-            staticObject.transform.Translate(x - 50f + offsetX, y + (staticObject.transform.localScale.y / 2.25f) + offsetY, z - 50f + offsetZ);
             
         }
         

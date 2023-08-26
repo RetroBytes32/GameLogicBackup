@@ -174,6 +174,9 @@ public class ChunkSerializer {
             saveChunk.staticRotation[i] = new Vec3(staticObject.transform.rotation.x, staticObject.transform.rotation.y, staticObject.transform.rotation.z);
             saveChunk.staticScale[i]    = new Vec3(staticObject.transform.localScale.x, staticObject.transform.localScale.y, staticObject.transform.localScale.z);
             
+            ItemTag itemTag    = staticObject.GetComponent<ItemTag>();
+            saveChunk.data[i]  = itemTag.data;
+            
         }
         
         // Save dynamic entities
@@ -186,7 +189,7 @@ public class ChunkSerializer {
             saveChunk.entityRotation[i] = new Vec3(entityObject.transform.rotation.x, entityObject.transform.rotation.y, entityObject.transform.rotation.z);
             
             // Tag data
-            EntityTag entityTag     = entityObject.gameObject.GetComponent<EntityTag>();
+            EntityTag entityTag     = entityObject.GetComponent<EntityTag>();
             
             saveChunk.entityName[i] = entityTag.Name;
             saveChunk.Health[i]     = entityTag.Health;
@@ -200,6 +203,7 @@ public class ChunkSerializer {
             // AI
             ActorTag actorTag = entityObject.GetComponent<ActorTag>();
             
+            saveChunk.memories[i]                = actorTag.memories;
             saveChunk.chanceToChangeDirection[i] = actorTag.chanceToChangeDirection;
             saveChunk.chanceToWalk[i]            = actorTag.chanceToWalk;
             saveChunk.chanceToFocusOnPlayer[i]   = actorTag.chanceToFocusOnPlayer;
@@ -295,6 +299,7 @@ public class ChunkSerializer {
             loadingX = chunk_x;
             loadingZ = chunk_z;
             loading_chunk = chunk;
+            chunk.SetActive(false);
             
             isChunkLoaded    = false;
             isLoading        = true;
@@ -311,9 +316,17 @@ public class ChunkSerializer {
 	
 	
 	
+	
+	//
+	// Thread loader
+	//
+	
 	public void chunkThreadLoad() {
         
         string chunkName = loadingX + "_" + loadingZ;
+        
+        if (saving_chunk == loading_chunk) 
+            return;
         
         fileStream_load = System.IO.File.Open(worldsPath + worldName + chunksPath + chunkName, System.IO.FileMode.Open, System.IO.FileAccess.Read);
         loadChunk = formatter.Deserialize(fileStream_load) as ChunkData;
@@ -373,6 +386,8 @@ public class ChunkSerializer {
             
         }
         
+        loading_chunk.SetActive(true);
+        
         chunkTag.update_mesh();
         chunkTag.update_color();
         
@@ -424,6 +439,10 @@ public class ChunkSerializer {
             //newStatic.SetActive(false);
             
             
+            // Item tag data
+            ItemTag itemTag = newStatic.GetComponent<ItemTag>();
+            itemTag.data    = loadChunk.data[i];
+            
             
             if (newStatic.name == "log") {
             
@@ -463,9 +482,8 @@ public class ChunkSerializer {
             
             newEntity.transform.parent = newEntitiesList.transform;
             
-            //
-            // Tag data
-            EntityTag entityTag   = newEntity.gameObject.GetComponent<EntityTag>();
+            // Entity tag data
+            EntityTag entityTag   = newEntity.GetComponent<EntityTag>();
             
             entityTag.Name        = loadChunk.entityName[i];
             entityTag.Health      = loadChunk.Health[i];
@@ -477,8 +495,10 @@ public class ChunkSerializer {
             entityTag.useAI       = loadChunk.useAI[i];
             
             // AI
-            ActorTag actorTag = newEntity.gameObject.GetComponent<ActorTag>();
+            ActorTag actorTag = newEntity.GetComponent<ActorTag>();
             actorTag.AI_initiate();
+            
+            actorTag.memories                = loadChunk.memories[i];
             
             actorTag.chanceToChangeDirection = loadChunk.chanceToChangeDirection[i];
             actorTag.chanceToWalk            = loadChunk.chanceToWalk[i];
@@ -516,7 +536,7 @@ public class ChunkSerializer {
             // Genetic state
             if (entityTag.isGenetic) {
             
-            GeneTag entityGeneticTag = newEntity.gameObject.GetComponent<GeneTag>();
+            GeneTag entityGeneticTag = newEntity.GetComponent<GeneTag>();
             
             entityGeneticTag.AdultSizeMul  = loadChunk.AdultSizeMul[i];
             
@@ -611,8 +631,9 @@ public class ChunkSerializer {
         worldData.inv_selector = interfaceScript.selectedSlot;
         
         for (int i=0; i < 8; i++) {
-            worldData.inv_name[i]  = inventory.Name[i];
-            worldData.inv_count[i] = inventory.Stack[i];
+            worldData.inv_name[i]       = inventory.Name[i];
+            worldData.inv_count[i]      = inventory.Stack[i];
+            worldData.inv_durability[i] = inventory.Durability[i];
         }
         
         // Setup the version data
@@ -686,11 +707,12 @@ public class ChunkSerializer {
         
         for (int i=0; i < 8; i++) {
             
-            inventory.Name[i]  = worldData.inv_name[i];
-            inventory.Stack[i] = worldData.inv_count[i];
+            inventory.Name[i]       = worldData.inv_name[i];
+            inventory.Stack[i]      = worldData.inv_count[i];
+            inventory.Durability[i] = worldData.inv_durability[i];
             
             if (inventory.Name[i] != "") 
-            inventory.State[i] = true;
+                inventory.State[i] = true;
             
         }
         

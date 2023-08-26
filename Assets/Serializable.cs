@@ -71,8 +71,10 @@ public class WorldData {
 	public int TickCounter; // World up time
 	
 	// Inventory state
-	public string[]  inv_name      = new string[8];
-	public int[]     inv_count     = new int[8];
+	public string[]  inv_name        = new string[8];
+	public int[]     inv_count       = new int[8];
+	public int[]     inv_durability  = new int[8];
+	
 	public int       inv_selector;
 	
 }
@@ -100,6 +102,8 @@ public class ChunkData {
 	public Vec3[]     staticRotation;
 	public Vec3[]     staticScale;
 	
+	public string[]   data;
+	
 	// Dynamic chunk entities
 	public int        entityCount;
 	public string[]   entityName;
@@ -121,6 +125,8 @@ public class ChunkData {
 	//
 	// AI
 	//
+	
+	public string[] memories;
 	
 	public float[] chanceToChangeDirection;
 	public float[] chanceToWalk;
@@ -215,6 +221,7 @@ public class ChunkData {
         staticRotation  = new Vec3[staticCount];
         staticScale     = new Vec3[staticCount];
         
+        data            = new string[staticCount];
         
         // Dynamic entities
         entityCount     = dynamic_count;
@@ -235,6 +242,8 @@ public class ChunkData {
         
         
         // AI
+        memories                = new string[entityCount];
+        
         chanceToChangeDirection = new float[entityCount];
         chanceToWalk            = new float[entityCount];
         chanceToFocusOnPlayer   = new float[entityCount];

@@ -406,6 +406,10 @@ MonoBehaviour:
     image: {fileID: 6978818335166744322, guid: 65c7c96ddd1bcfb4c8101f53e9d01a21, type: 3}
   - name: inv_pickaxe
     image: {fileID: 638451680798055107, guid: bfa32419a8e16954cb4091877ec61055, type: 3}
+  - name: inv_stone
+    image: {fileID: 1374460926473140120, guid: c8bc734681d59d4448ced6e255db9b20, type: 3}
+  - name: inv_planks
+    image: {fileID: 3680255931553234103, guid: ca1de6d708222ef4094470bc1ada242e, type: 3}
   State: 0000000000000000
   Name:
   - 
@@ -418,6 +422,7 @@ MonoBehaviour:
   - 
   Stack: 0000000000000000000000000000000000000000000000000000000000000000
   StackMax: 0000000000000000000000000000000000000000000000000000000000000000
+  Durability: 0000000000000000000000000000000000000000000000000000000000000000
   inventory_slots:
   - {fileID: 829455946}
   - {fileID: 1843886255}
@@ -5475,6 +5480,14 @@ MonoBehaviour:
     stackMax: 1
     inventoryImage: {fileID: 638451680798055110, guid: bfa32419a8e16954cb4091877ec61055,
       type: 3}
+  - name: stone
+    stackMax: 100
+    inventoryImage: {fileID: 2124343580733932665, guid: f6bd1a93635d05c4b91afdf3f20d0f1d,
+      type: 3}
+  - name: planks
+    stackMax: 100
+    inventoryImage: {fileID: 3680255931553234101, guid: ca1de6d708222ef4094470bc1ada242e,
+      type: 3}
   entities:
   - name: Human
   - name: Bear
@@ -5493,7 +5506,15 @@ MonoBehaviour:
   - name: log
     itemClass: wood
     hardness: 100
+  - name: stone
+    itemClass: stone
+    hardness: 400
+  - name: planks
+    itemClass: wood
+    hardness: 80
   shatterableItem:
+  - name: leaf
+    hardness: 20
   - name: leaves
     hardness: 20
   - name: pine_leaves
@@ -5502,14 +5523,17 @@ MonoBehaviour:
   - name: stick
     attackDamage: 2
     strikingForce: 1
+    durability: 10
     targetItemClass: wood
   - name: axe
-    attackDamage: 5
+    attackDamage: 7
     strikingForce: 80
+    durability: 200
     targetItemClass: wood
   - name: pickaxe
     attackDamage: 4
-    strikingForce: 180
+    strikingForce: 380
+    durability: 400
     targetItemClass: stone
   runCameraDamageAnimation: 0
   damageIndicationOffset: -1
@@ -5600,17 +5624,17 @@ MonoBehaviour:
       height_range_min: 0
       height_range_max: 10
       ColorHead:
-      - {r: 0.3301887, g: 0.3301887, b: 0.3301887, a: 0}
-      - {r: 0.2264151, g: 0.13904735, b: 0.11000357, a: 0}
+      - {r: 0.735849, g: 0.735849, b: 0.735849, a: 0}
+      - {r: 0.3679245, g: 0.3133722, b: 0.2967693, a: 0}
       - {r: 0.20754719, g: 0.18244396, b: 0.17524031, a: 0}
       ColorBody:
       - {r: 0.32941177, g: 0.32941177, b: 0.32941177, a: 0}
-      - {r: 0.22745098, g: 0.13725491, b: 0.10980392, a: 0}
+      - {r: 0.36862746, g: 0.3137255, b: 0.29803923, a: 0}
       - {r: 0.20784314, g: 0.18431373, b: 0.1764706, a: 0}
       - {r: 0.103773594, g: 0.09679825, b: 0.09447313, a: 0}
       ColorLimbs:
-      - {r: 0.32941177, g: 0.32941177, b: 0.32941177, a: 0}
-      - {r: 0.22745098, g: 0.13725491, b: 0.10980392, a: 0}
+      - {r: 0.5471698, g: 0.5471698, b: 0.5471698, a: 0}
+      - {r: 0.36862746, g: 0.3137255, b: 0.29803923, a: 0}
       - {r: 0.20784314, g: 0.18431373, b: 0.1764706, a: 0}
     treeSpawn:
     - name: log
@@ -5620,6 +5644,7 @@ MonoBehaviour:
       stack_height_min: 3
       stack_height_max: 8
       leafName: leaves
+      leafColor: {r: 0, g: 0, b: 0, a: 0}
       leafDensity: 8
       leafHeight: 0
       leafSpread: 5
@@ -5670,11 +5695,26 @@ MonoBehaviour:
     treeSpawn:
     - name: log
       height_range_min: 0
-      height_range_max: 32
-      density: 40
+      height_range_max: 20
+      density: 20
       stack_height_min: 3
       stack_height_max: 8
       leafName: pine_leaves
+      leafColor: {r: 0, g: 0, b: 0, a: 0}
+      leafDensity: 4
+      leafHeight: 5
+      leafSpread: -0.5
+      leafHeightMul: -2
+      leafSpreadMul: -0.5
+      scaleAndStagger: 1
+    - name: log
+      height_range_min: 20
+      height_range_max: 32
+      density: 50
+      stack_height_min: 3
+      stack_height_max: 8
+      leafName: pine_leaves
+      leafColor: {r: 0, g: 0, b: 0, a: 0}
       leafDensity: 4
       leafHeight: 5
       leafSpread: -0.5
