@@ -30,7 +30,7 @@ public class ActorTag : MonoBehaviour {
 	public EntityTag  entityTag;
 	public bool       isActive;
     
-	// AI parameters
+    // AI parameters
     
 	[Space(10)]
 	[Header("AI personality parameters")]
@@ -1124,6 +1124,57 @@ public class ActorTag : MonoBehaviour {
         
 	}
     
+    
+    //
+    // AI memory
+    //
+    
+    public void addMemory(string name, string data) {
+        if (memories == "") {
+            memories = name +"="+ data;
+        } else {
+            memories += ";"+name +"="+ data;
+        }
+    }
+    
+    public string getMemory(string name) {
+        
+        string[] pairList = memories.Split(';');
+        
+        for (int i=0; i < pairList.Length; i++) {
+            
+            string[] nameValueSet = pairList[i].Split('=');
+            
+            if (nameValueSet[0] != name) 
+                continue;
+            
+            return nameValueSet[1];
+        }
+        
+        return "";
+    }
+    
+    public bool removeMemory(string name) {
+        
+        string[] pairList = memories.Split(';');
+        clearMemory();
+        
+        for (int i=0; i < pairList.Length; i++) {
+            
+            string[] nameValueSet = pairList[i].Split('=');
+            
+            if (nameValueSet[0] == name) 
+                continue;
+            
+            addMemory(nameValueSet[0], nameValueSet[1]);
+        }
+        
+        return true;
+    }
+    
+    public void clearMemory() {
+        memories = "";
+    }
     
 }
 

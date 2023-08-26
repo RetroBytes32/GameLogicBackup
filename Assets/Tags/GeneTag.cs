@@ -10,6 +10,8 @@ public class GeneTag : MonoBehaviour {
 	
 	public string   gene_string;
 	
+	public bool     doUpdateGenetics  = false;
+	
 	[Space(3)]
 	[Header("Body transforms")]
 	[Space(10)]
