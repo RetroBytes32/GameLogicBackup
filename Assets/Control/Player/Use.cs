@@ -93,7 +93,11 @@ public class Use : MonoBehaviour {
                     interfaceScript.updateInHand();
                     
                     resetConsumeAnimation();
-                    isConsuming = false;
+                    
+                    if (interfaceScript.inventory.checkSlot() == "")
+                        isConsuming = false;
+                    
+                    break;
                 }
                 
             }
@@ -110,9 +114,9 @@ public class Use : MonoBehaviour {
 	    //
 	    // Use animation cycle
 	    
-	    if (runConsumeAnimation == true) {
+	    if (runConsumeAnimation) {
 	      
-	      if (useCounter <= 0) {
+	      if (useCounter < 0) {
 	        
 	        // Reset animation cycle
 	        consumeOffset=0;

@@ -17,7 +17,8 @@ public class Movement : MonoBehaviour {
 	public float jumpTimer     = 0;
 	public float jumpCoolDown  = 2;
 	
-	public bool isGrounded = false;
+	public bool isGrounded    = false;
+	public bool isDoubleFast  = false;
 	
 	public Transform PlayerSourceTransform;
 	
@@ -37,10 +38,23 @@ public class Movement : MonoBehaviour {
         float z=0f;
         Vector3 movement = new Vector3(0f, 0f, 0f);
         
+        // Check forward double fast
+        if (Input.GetKeyDown(KeyCode.LeftControl)) {
+            isDoubleFast = true;
+        }
+        
         if (!tickUpdate.doShowConsole) {
             
             x = Input.GetAxis("Horizontal");
             z = Input.GetAxis("Vertical");
+            
+            // Double speed multiplier
+            if (!Input.GetKey(KeyCode.W)) 
+                isDoubleFast = false;
+            
+            float speedMul = 1f;
+            if (isDoubleFast) 
+                speedMul = 5f;
             
             movement = (PlayerSourceTransform.transform.right * x) + (PlayerSourceTransform.transform.forward * z);
             
@@ -52,13 +66,13 @@ public class Movement : MonoBehaviour {
                 if (Input.GetButton("Crouch")) 
                     movement.y -= 0.87f;
                 
-                controller.Move(movement * (Speed * 3.5f) * Time.deltaTime);
+                controller.Move(movement * Speed * Time.deltaTime * speedMul * 1.5f);
                 
                 return;
             }
             
-            // Directional movement
-            controller.Move(movement * Speed * Time.deltaTime);
+            // Apply directional movement
+            controller.Move(movement * Speed * Time.deltaTime * speedMul);
             
             // Remove hunger saturation when moving
             if (controller.velocity != Vector3.zero) {

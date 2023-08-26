@@ -138,15 +138,28 @@ public class Attack : MonoBehaviour {
                 
                 // Get object name
                 string objectName = hit_obj.transform.parent.transform.gameObject.name;
+                GameObject targetObject = hit_obj.transform.parent.transform.gameObject;
+                
+                if (objectName == "hitbox") {
+                    objectName   = hit_obj.transform.parent.transform.parent.transform.gameObject.name;
+                    targetObject = hit_obj.transform.parent.transform.parent.transform.gameObject;
+                }
                 
                 //
                 // Attack time out
                 
                 if (attackTimer == 1) {
                     
+                    // Remove some durability
+                    if (interfaceScript.inventory.Durability[interfaceScript.selectedSlot] > 0) 
+                        interfaceScript.inventory.Durability[interfaceScript.selectedSlot]--;
+                    
                     attackTimer = 0;
                     
                     runAttackAnimCycle = false;
+                    
+                    transform.GetChild(0).transform.GetChild(0).transform.GetChild(0).transform.localPosition = new Vector3(1.5f, -1f, 2f);
+                    transform.GetChild(0).transform.GetChild(0).transform.GetChild(0).transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
                     
                     // Check if the item is shatterable
                     for (int i=0; i < tickUpdate.shatterableItem.Length; i++) {
@@ -154,7 +167,7 @@ public class Attack : MonoBehaviour {
                             continue;
                         
                         // Destroy the item
-                        Destroy( hit_obj.transform.parent.transform.gameObject );
+                        Destroy( targetObject );
                         
                         return;
                     }
@@ -171,8 +184,8 @@ public class Attack : MonoBehaviour {
                     }
                     
                     // Pick up the item
-                    Destroy( hit_obj.transform.parent.transform.gameObject );
-                    inventory.addItem(objectName, 1, maxStack);
+                    Destroy( targetObject );
+                    inventory.addItem(objectName, 1, maxStack, -1);
                     interfaceScript.updateInHand();
                     
                     return;
@@ -243,9 +256,20 @@ public class Attack : MonoBehaviour {
                     runAttackAnimCycle = false;
                     runPickupAnimCycle = true;
                     
+                    // Get item data
+                    ItemTag itemTag = targetObject.GetComponent<ItemTag>();
+                    
+                    int durability  = -1;
+                    
+                    string durabilityTag = itemTag.getTag("durability");
+                    if (durabilityTag != "") {
+                        
+                        durability = int.Parse(durabilityTag);
+                    }
+                    
                     // Pick up the item
-                    Destroy( hit_obj.transform.parent.transform.gameObject );
-                    inventory.addItem(objectName, 1, maxStack);
+                    Destroy( targetObject );
+                    inventory.addItem(objectName, 1, maxStack, durability);
                     interfaceScript.updateInHand();
                     
                 } else {

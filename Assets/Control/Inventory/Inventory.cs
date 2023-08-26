@@ -32,6 +32,7 @@ public class Inventory : MonoBehaviour {
 	public string[]       Name            = new string[8];
 	public int[]          Stack           = new int[8];
 	public int[]          StackMax        = new int[8];
+	public int[]          Durability      = new int[8];
 	
 	public GameObject[]   inventory_slots = new GameObject[8];
 	public RawImage[]     slot_image      = new RawImage[8];
@@ -169,7 +170,7 @@ public class Inventory : MonoBehaviour {
 	
 	
 	
-	public int addItem(string name, int amount, int stackMax) {
+	public int addItem(string name, int amount, int stackMax, int durability) {
         
         int  ReturnValue = -1;
         
@@ -206,6 +207,7 @@ public class Inventory : MonoBehaviour {
                 
                 // Add one item
                 Stack[slot] ++;
+                Durability[slot] = durability;
                 
                 ReturnValue = slot;
                 
@@ -222,10 +224,11 @@ public class Inventory : MonoBehaviour {
                     // Check slot free
                     if (!State[slot]) {
                         
-                        State[slot]    = true;
-                        Name[slot]     = name;
-                        Stack[slot]   += 1;
-                        StackMax[slot] = stackMax;
+                        State[slot]      = true;
+                        Name[slot]       = name;
+                        Stack[slot]     += 1;
+                        StackMax[slot]   = stackMax;
+                        Durability[slot] = durability;
                         
                         ReturnValue = slot;
                         
@@ -238,27 +241,6 @@ public class Inventory : MonoBehaviour {
         }
         
         updateInventory();
-        
-        /*
-        
-        for (int i=0; i < tickUpdate.items.Length; i++) {
-            
-            if (tickUpdate.items[i].name == name) {
-                
-                string FinalCount = Stack[slot].ToString();
-                
-                if (Stack[slot] < 2) 
-                    FinalCount = "";
-                
-                slot_image[slot].texture = tickUpdate.items[i].inventoryImage.texture;
-                slot_count[slot].text = FinalCount;
-                
-                break;
-            }
-            
-        }
-        
-        */
         
         return ReturnValue;
 	}
@@ -300,9 +282,10 @@ public class Inventory : MonoBehaviour {
 	public void clear() {
         
         for (int i=0; i < 8; i++) {
-            State[i] = false;
-            Name[i]  = "";
-            Stack[i] = 0;
+            State[i]       = false;
+            Name[i]        = "";
+            Stack[i]       = 0;
+            Durability[i]  = -1;
             
             slot_image[i].texture = tickUpdate.items[0].inventoryImage.texture;
             slot_count[i].text    = "";
@@ -321,11 +304,11 @@ public class Inventory : MonoBehaviour {
         // Check if a slot is taken
         if (State[slot]) {
             
-            State[slot] = false;
-            Name[slot]  = "";
-            
+            State[slot]       = false;
+            Name[slot]        = "";
+            Durability[slot]  = -1;
             slot_image[slot].texture = tickUpdate.items[0].inventoryImage.texture;
-            slot_count[slot].text = "";
+            slot_count[slot].text    = "";
             
             return true;
         }

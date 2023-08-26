@@ -71,6 +71,45 @@ public class Drop : MonoBehaviour {
                 
                 string objectName = hit_obj.transform.parent.transform.gameObject.name;
                 
+                // Check if the object has a precise hit box
+                if (objectName == "hitbox") {
+                    objectName = hit_obj.transform.parent.transform.parent.transform.gameObject.name;
+                    
+                    // Create item drop
+                    GameObject newObject = Instantiate( Resources.Load( slotName )) as GameObject;
+                    newObject.name = slotName;
+                    newObject.transform.parent = chunkObject.transform.GetChild(2).transform;
+                    
+                    // Calculate the direction offset
+                    float posX=0f;
+                    float posY=0f;
+                    float posZ=0f;
+                    
+                    if (hit_obj.transform.gameObject.name == "front")   posX -= hit_obj.transform.localScale.x;
+                    if (hit_obj.transform.gameObject.name == "back")    posX  = hit_obj.transform.localScale.x;
+                    if (hit_obj.transform.gameObject.name == "top")     posY  = hit_obj.transform.localScale.y;
+                    if (hit_obj.transform.gameObject.name == "bottom")  posY -= hit_obj.transform.localScale.y;
+                    if (hit_obj.transform.gameObject.name == "left")    posZ  = hit_obj.transform.localScale.z;
+                    if (hit_obj.transform.gameObject.name == "right")   posZ -= hit_obj.transform.localScale.z;
+                    
+                    newObject.transform.position = new Vector3(hit_obj.transform.position.x + posX,
+                                                               hit_obj.transform.position.y + posY,
+                                                               hit_obj.transform.position.z + posZ);
+                    
+                } else {
+                    
+                    // Create item drop
+                    GameObject newObject = Instantiate( Resources.Load( slotName )) as GameObject;
+                    newObject.name = slotName;
+                    newObject.transform.parent = chunkObject.transform.GetChild(2).transform;
+                    
+                    // Stack the objects up
+                    newObject.transform.position = new Vector3(hit_obj.transform.position.x,
+                                                            hit_obj.transform.position.y + hit_obj.transform.localScale.y,
+                                                            hit_obj.transform.position.z);
+                    
+                }
+                
                 // If stack is empty, remove the object from players hand
                 if (interfaceScript.inventory.removeItem() == 0) {
                     
@@ -79,44 +118,6 @@ public class Drop : MonoBehaviour {
                     
                     interfaceScript.updateInHand();
                 }
-                
-                // Create drop object
-                GameObject newObject = Instantiate( Resources.Load( slotName )) as GameObject;
-                newObject.name = slotName;
-                newObject.transform.parent = chunkObject.transform.GetChild(2).transform;
-                
-                // Calculate target position
-                
-                float offsetX = 0f;
-                float offsetY = 0f;
-                float offsetZ = 0f;
-                
-                // Check player position is larger than hit point
-                
-                // Calculate X offset
-                /*
-                if (transform.position.x > hit_obj.transform.position.x) {
-                    offsetX += hit_obj.transform.localScale.x + 0.05f;
-                } else {
-                    offsetX -= hit_obj.transform.localScale.x + 0.05f;
-                }
-                */
-                
-                // Calculate Y offset
-                offsetY = hit_obj.transform.localScale.y;
-                
-                // Calculate Z offset
-                /*
-                if (transform.position.z > hit_obj.transform.position.z) {
-                    offsetZ += hit_obj.transform.localScale.z + 0.05f;
-                } else {
-                    offsetZ -= hit_obj.transform.localScale.z + 0.05f;
-                }
-                */
-                
-                newObject.transform.position = new Vector3(hit_obj.transform.position.x + offsetX,
-                                                           hit_obj.transform.position.y + offsetY,
-                                                           hit_obj.transform.position.z + offsetZ);
                 
                 return;
             }
@@ -166,6 +167,7 @@ public class Drop : MonoBehaviour {
                 Vector3 roundedPosition;
                 roundedPosition.x = Mathf.Round(hit_gnd.point.x);
                 roundedPosition.z = Mathf.Round(hit_gnd.point.z);
+                
                 
                 newObject.transform.Translate( new Vector3(roundedPosition.x, 
                                                            hit_gnd.point.y + (newObject.transform.localScale.y / 2), 
@@ -217,6 +219,12 @@ public class Drop : MonoBehaviour {
                 Vector3 roundedPosition;
                 roundedPosition.x = Mathf.Round(hit_gnd.point.x);
                 roundedPosition.z = Mathf.Round(hit_gnd.point.z);
+                
+                // Set item data
+                ItemTag itemTag = newObject.GetComponent<ItemTag>();
+                
+                if (interfaceScript.inventory.Durability[interfaceScript.selectedSlot] != -1) 
+                    itemTag.addTag("durability", interfaceScript.inventory.Durability[interfaceScript.selectedSlot].ToString());
                 
                 newObject.transform.Translate( new Vector3(roundedPosition.x, 
                                                            hit_gnd.point.y + (newObject.transform.localScale.y / 2), 
