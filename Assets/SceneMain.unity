@@ -5419,8 +5419,8 @@ MonoBehaviour:
   EntityDistance: 0.3
   TickRate: 3
   TickCounter: 0
-  breedPairState: 0
   numberOfChildren: 1
+  breedingCoolDownTimer: 0
   gene_m: {fileID: 0}
   gene_p: {fileID: 0}
   items:
@@ -5536,7 +5536,7 @@ MonoBehaviour:
     durability: 400
     targetItemClass: stone
   runCameraDamageAnimation: 0
-  damageIndicationOffset: -1
+  damageIndicationOffset: 0
   ChunkList: {fileID: 101342563}
   CommandConsole: {fileID: 180501531}
   CommandConsoleTimer: 0
@@ -5695,7 +5695,7 @@ MonoBehaviour:
     treeSpawn:
     - name: log
       height_range_min: 0
-      height_range_max: 20
+      height_range_max: 10
       density: 20
       stack_height_min: 3
       stack_height_max: 8
@@ -5708,9 +5708,9 @@ MonoBehaviour:
       leafSpreadMul: -0.5
       scaleAndStagger: 1
     - name: log
-      height_range_min: 20
+      height_range_min: 10
       height_range_max: 32
-      density: 50
+      density: 80
       stack_height_min: 3
       stack_height_max: 8
       leafName: pine_leaves
@@ -5761,14 +5761,19 @@ MonoBehaviour:
       - {r: 0.3019608, g: 0.23921569, b: 0.1882353, a: 0}
     treeSpawn: []
   structures:
-  - name: tree
-    items:
-    - name: log
-      position: {x: 0, y: 0, z: 0}
-    - name: log
-      position: {x: 0, y: 1, z: 0}
-    - name: log
-      position: {x: 0, y: 2, z: 0}
+  - name: base_3x3
+    items: []
+    fills:
+    - name: stone
+      from: {x: -3, y: 0, z: -3}
+      to: {x: 3, y: 0, z: 3}
+    entities: []
+  - name: base_4x4
+    items: []
+    fills:
+    - name: stone
+      from: {x: -4, y: 0, z: -4}
+      to: {x: 4, y: 0, z: 4}
     entities: []
   WaterColor: {r: 0.08627451, g: 0.29411766, b: 0.62352943, a: 0.49019608}
   MudColor: {r: 0.18867922, g: 0.07667089, b: 0.031149866, a: 0}

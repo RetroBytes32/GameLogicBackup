@@ -7,7 +7,10 @@ using UnityEngine;
 [System.Serializable]
 public class StructureItem {
     public string   name;
+    public string   data;
     public Vector3  position;
+    public Vector3  rotation;
+    public Vector3  scale;
 }
 
 [System.Serializable]
@@ -22,8 +25,8 @@ public class Structure {
     
     public string name;
     
-    public StructureItem[]    items;
-    public StructureEntity[]  entities;
+    public List<StructureItem>    items;
+    public List<StructureEntity>  entities;
     
 }
 
@@ -262,7 +265,9 @@ public class ChunkGeneration : MonoBehaviour {
 	[Header("Structures")]
 	[Space(5)]
     
-    public Structure[]   structures;
+    public bool doSavePlacedObjectsToStructure = false;
+    
+    public Structure  currentStructure;
     
     
     
@@ -718,10 +723,10 @@ public class ChunkGeneration : MonoBehaviour {
         // Generate biome material groups
         //
         
-        
-        // Water table
+        // Water material
         GameObject waterBase  = MonoBehaviour.Instantiate( Resources.Load( "WaterTable" )) as GameObject;
         Renderer   waterBaseRenderer = waterBase.GetComponent<Renderer>();
+        waterBase.SetActive(false);
         
         waterBase.transform.parent  = gameRules.transform;
         waterBase.transform.position = new Vector3(0f, -1000f, 0f);
@@ -731,8 +736,9 @@ public class ChunkGeneration : MonoBehaviour {
         mat_water.color     = WaterColor;
         
         
+        //
+        // Create biome materials for material batching
         
-        // Create biome material groups
         /*
         for (int i=0; i < biomes.Length; i++) {
             

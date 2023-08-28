@@ -54,8 +54,7 @@ public class TickUpdate : MonoBehaviour {
     
 	public int clientVersion   = 100;
     
-    
-	[Space(10)]
+    [Space(10)]
     [Header("World information")]
 	[Space(5)]
     
@@ -135,9 +134,9 @@ public class TickUpdate : MonoBehaviour {
 	[Header("Entity breeding")]
 	[Space(5)]
     
-	public bool  breedPairState   = false;
-	public int   numberOfChildren = 1;
-	public GameObject gene_m;
+	public int   numberOfChildren       = 1;
+	
+    public GameObject gene_m;
 	public GameObject gene_p;
     
     
@@ -195,7 +194,7 @@ public class TickUpdate : MonoBehaviour {
 	[Space(5)]
     
 	public bool  runCameraDamageAnimation = false;
-	public float damageIndicationOffset  = -1f;
+	public float damageIndicationOffset  = 0f;
     
 	public GameObject           ChunkList;
     
@@ -248,6 +247,7 @@ public class TickUpdate : MonoBehaviour {
     
 	float currentLoadingX;
 	float currentLoadingZ;
+    int   currentChunkRing=2;
     
 	int ChunkCounterX=0;
 	int ChunkCounterZ=0;
@@ -460,7 +460,7 @@ public class TickUpdate : MonoBehaviour {
         
         
         //
-        // Master world tick counter
+        // Global tick counter
         //
         
         BaseCounter += Time.deltaTime / ((float)TickRate);
@@ -476,13 +476,13 @@ public class TickUpdate : MonoBehaviour {
             //
             // Check to join entity genetics
             //
-            
-            if (breedPairState == true) {
-                breedPairState = false;
+            if ((gene_m != null) & (gene_p != null)) {
                 
-                for (int i=0; i < numberOfChildren; i++) {
+                for (int i=0; i < numberOfChildren; i++) 
                     joinGeneticPair();
-                }
+                
+                gene_m = null;
+                gene_p = null;
             }
             
             
@@ -609,16 +609,23 @@ public class TickUpdate : MonoBehaviour {
         
         if (runCameraDamageAnimation) {
             
-            if (damageIndicationOffset == -1f) 
-                damageIndicationOffset = 5f;
+            if (damageIndicationOffset == 0f) {
+                if (Random.Range(0, 10) > 4) {
+                    damageIndicationOffset =  40f;
+                } else {
+                    damageIndicationOffset = -40f;
+                }
+            }
             
-            if (damageIndicationOffset > 0) {
-                damageIndicationOffset -= 1f;
+            if (damageIndicationOffset > 0f) {
+                damageIndicationOffset -= 10f;
             } else {
-                
-                damageIndicationOffset = -1f;
+                damageIndicationOffset += 10f;
+            }
+            
+            if ((damageIndicationOffset > -10f) & (damageIndicationOffset < 10f)) {
+                damageIndicationOffset = 0f;
                 runCameraDamageAnimation = false;
-                
             }
             
         }
@@ -716,6 +723,115 @@ public class TickUpdate : MonoBehaviour {
 	
 	
 	
+	//
+	// Save current structure to an external file
+	public void saveCurrentStructureToFile() {
+        
+        int numberOfItems = chunkGenerator.currentStructure.items.Count;
+        
+        StructureData structureData = new StructureData(numberOfItems);
+        
+        for (int i=0; i < numberOfItems; i++) {
+            
+            structureData.name[i]     = chunkGenerator.currentStructure.items[i].name;
+            structureData.data[i]     = chunkGenerator.currentStructure.items[i].data;
+            
+            structureData.position[i] = new Vec3(chunkGenerator.currentStructure.items[i].position);
+            structureData.rotation[i] = new Vec3(chunkGenerator.currentStructure.items[i].rotation);
+            structureData.scale[i]    = new Vec3(chunkGenerator.currentStructure.items[i].scale);
+            
+        }
+        
+        // Check structures directory
+        string structuresPath = "structures/";
+        if (!System.IO.Directory.Exists(structuresPath)) 
+            System.IO.Directory.CreateDirectory(structuresPath);
+        
+        // Check if the file already exists
+        string filePath = structuresPath + chunkGenerator.currentStructure.name + ".structure";
+        if (System.IO.File.Exists(filePath)) 
+            System.IO.File.Delete(filePath);
+        
+        // Binary stream
+        System.Runtime.Serialization.Formatters.Binary.BinaryFormatter formatter;
+        formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+        
+        System.IO.FileStream fileStream_save;
+        
+        // Stream data to the file
+        fileStream_save = System.IO.File.Open(filePath, System.IO.FileMode.Create, System.IO.FileAccess.Write);
+        formatter.Serialize(fileStream_save, structureData);
+        
+        // Close out
+        fileStream_save.Close();
+        
+        return;
+    }
+	
+	
+	
+	
+	//
+	// Load a structure from an external file
+	public int loadStructureFileToCurrentStructure() {
+        
+        // Check structures directory
+        string structuresPath = "structures/";
+        if (!System.IO.Directory.Exists(structuresPath)) 
+            System.IO.Directory.CreateDirectory(structuresPath);
+        
+        // Check if the file does not exist
+        string filePath = structuresPath + chunkGenerator.currentStructure.name + ".structure";
+        if (!System.IO.File.Exists(filePath)) 
+            return 0;
+        
+        // Binary stream
+        System.Runtime.Serialization.Formatters.Binary.BinaryFormatter formatter;
+        formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+        
+        System.IO.FileStream fileStream_load;
+        fileStream_load = System.IO.File.Open(structuresPath + filePath, System.IO.FileMode.Open, System.IO.FileAccess.Read);
+        
+        StructureData structureData = new StructureData(2048);
+        structureData = formatter.Deserialize(fileStream_load) as StructureData;
+        
+        // Close out
+        fileStream_load.Close();
+        
+        
+        // Load the data
+        int numberOfItems = structureData.name.Length;
+        
+        for (int i=0; i < numberOfItems; i++) {
+            
+            StructureItem newStructureItem = new StructureItem();
+            
+            newStructureItem.name = structureData.name[i];
+            newStructureItem.data = structureData.data[i];
+            newStructureItem.position = new Vector3(structureData.position[i].x, structureData.position[i].y, structureData.position[i].z);
+            newStructureItem.rotation = new Vector3(structureData.rotation[i].x, structureData.rotation[i].y, structureData.rotation[i].z);
+            newStructureItem.scale    = new Vector3(structureData.scale[i].x, structureData.scale[i].y, structureData.scale[i].z);
+            
+            chunkGenerator.currentStructure.items.Add(newStructureItem);
+            
+        }
+        
+        return 1;
+    }
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	
@@ -754,6 +870,19 @@ public class TickUpdate : MonoBehaviour {
                 continue;
             }
             
+            GameObject staticObject = staticList.transform.GetChild(staticCounter).transform.gameObject;
+            
+            // Item end of life counter
+            if (staticObject.GetComponent<ItemTag>().lifeTime > 0) {
+                staticObject.GetComponent<ItemTag>().lifeTime--;
+                
+                if (staticObject.GetComponent<ItemTag>().lifeTime == 0) {
+                    
+                    Destroy(staticObject);
+                    continue;
+                }
+            }
+            
             
             //
             // Check chunk distance
@@ -789,7 +918,48 @@ public class TickUpdate : MonoBehaviour {
 	
 	
 	
-	
+	public void entityAutoBreeding(GameObject entityList) {
+        
+        int   maxCountPerChunk  = 50;
+        float maxBreedDistance  = 10f;
+        
+        GameObject geneSrcM = null;
+        GameObject geneSrcP = null;
+        
+        if (entityList.transform.childCount < maxCountPerChunk) 
+            return;
+        
+        // Locate some entities in the same chunk
+        for (int i=0; i < 20; i++) {
+            geneSrcM = entityList.transform.GetChild( Random.Range(0, entityList.transform.childCount) ).transform.gameObject;
+            geneSrcP = entityList.transform.GetChild( Random.Range(0, entityList.transform.childCount) ).transform.gameObject;
+            
+            // Entity breeding distance
+            if (Vector3.Distance(geneSrcM.transform.position, geneSrcP.transform.position) < maxBreedDistance) 
+                continue;
+            
+            // Must be active
+            if (!geneSrcM.activeSelf) 
+                continue;
+            if (!geneSrcP.activeSelf) 
+                continue;
+            
+            // Parents cannot be the same
+            if (geneSrcM == geneSrcP)
+                continue;
+            
+            // Passed.. select pair for breeding
+            if (geneSrcM != null) gene_m = geneSrcM;
+            if (geneSrcP != null) gene_p = geneSrcP;
+            
+            break;
+        }
+        
+        
+        numberOfChildren = 1;
+        
+        return;
+    }
 	
 	
 	
@@ -846,6 +1016,13 @@ public class TickUpdate : MonoBehaviour {
             playerPos.y = 0;
             
             
+            // Entity auto breeding
+            
+            entityAutoBreeding(entityList);
+            
+            
+            
+            
             //
             // Check entity update distance
             float totalEntityDistance = ((float)RenderDistance * EntityDistance)  * 100;
@@ -875,12 +1052,12 @@ public class TickUpdate : MonoBehaviour {
             if (entityTag.useAI)
                 actorTag.updateAI();
             
-            // No AI attack in debug mode
+            // No AI attacks in debug mode
             if (doDebugMode) {
-                if (actorTag.targetEntity == Player) 
+                if (actorTag.targetEntity == Player) {
                     actorTag.targetEntity = null;
-                
-                actorTag.isAttacking = false;
+                    actorTag.isAttacking = false;
+                }
             }
             
             if (!entityObject.activeInHierarchy)
@@ -966,61 +1143,49 @@ public class TickUpdate : MonoBehaviour {
         if (chunkSerializer.isChunkFinalized == true) 
             return false;
         
-        bool canLoadChunk = false;
         
         // Chunk load counter
         ChunkCounterX++;
-        if (ChunkCounterX > (RenderDistance * 2)) {
+        if (ChunkCounterX > (currentChunkRing * 2)) {
             
             ChunkCounterX = 0;
             
             ChunkCounterZ++;
-            if (ChunkCounterZ > (RenderDistance * 2)) {
+            if (ChunkCounterZ > (currentChunkRing * 2)) {
                 
                 ChunkCounterZ = 0;
             }
         }
         
         
-        // Load chunks in the background
         playerChunkX = Mathf.Round(Player.transform.position.x / 100) * 100;
         playerChunkZ = Mathf.Round(Player.transform.position.z / 100) * 100;
         
-        float currentPlayerChunkCheckX = (((ChunkCounterX * 100) + playerChunkX)) - (RenderDistance * 100);
-        float currentPlayerChunkCheckZ = (((ChunkCounterZ * 100) + playerChunkZ)) - (RenderDistance * 100);
+        bool canLoadChunk = false;
+        
+        float currentPlayerChunkCheckX = (((ChunkCounterX * 100) + playerChunkX)) - (currentChunkRing * 100);
+        float currentPlayerChunkCheckZ = (((ChunkCounterZ * 100) + playerChunkZ)) - (currentChunkRing * 100);
         
         if (checkChunkFree(currentPlayerChunkCheckX, currentPlayerChunkCheckZ)) {
             currentLoadingX = currentPlayerChunkCheckX;
             currentLoadingZ = currentPlayerChunkCheckZ;
             canLoadChunk = true;
-        } else {
-            
-            // Check nearby chunks first
-            for (int x=0; x < 3; x++) {
-                for (int z=0; z < 3; z++) {
-                    
-                    float currentCheckX = ((x * 100) + playerChunkX) - 100;
-                    float currentCheckZ = ((z * 100) + playerChunkZ) - 100;
-                    
-                    if (checkChunkFree(currentCheckX, currentCheckZ)) {
-                        currentLoadingX = currentCheckX;
-                        currentLoadingZ = currentCheckZ;
-                        canLoadChunk = true;
-                        break;
-                    }
-                    
-                }
-                
-                if (canLoadChunk) break;
-            }
-            
         }
         
         
-        
-        // Check if the chunk can be loaded from disk
-        if (canLoadChunk == false) 
+        // Check if the chunk can be loaded
+        if (canLoadChunk == false) {
+            
+            // Advance to the next chunk layer outward
+            if ((ChunkCounterX == 0) & (ChunkCounterZ == 0)) {
+                currentChunkRing++;
+                
+                if (currentChunkRing >= RenderDistance) 
+                    currentChunkRing = 2;
+            }
+            
             return false;
+        }
         
         if (chunkSerializer.chunkExists(currentLoadingX, currentLoadingZ)) {
             
@@ -1074,7 +1239,7 @@ public class TickUpdate : MonoBehaviour {
         
         if ((!chunkSerializer.isSaving) & (!chunkSerializer.isChunkSaved)) {
             
-            float totalRenderDistance  = RenderDistance * 100f * 2f;
+            float farRenderDistance  = RenderDistance * 100f * 2f;
             
             for(int i = 0; i < ChunkList.transform.childCount; i++) {
                 
@@ -1083,7 +1248,7 @@ public class TickUpdate : MonoBehaviour {
                 Vector3 chunk_pos  = new Vector3(chunkObject.transform.position.x, 0f, chunkObject.transform.position.z);
                 Vector3 player_pos = new Vector3(Player.transform.position.x, 0f, Player.transform.position.z);
                 
-                if (Vector3.Distance(chunk_pos, player_pos) > totalRenderDistance) {
+                if (Vector3.Distance(chunk_pos, player_pos) > farRenderDistance) {
                     
                     // Save bypass for debugging
                     if (!doSaveChunks) {
@@ -1206,8 +1371,8 @@ public class TickUpdate : MonoBehaviour {
             return;
         
         Vector3 entityPosition = Vector3.Lerp(gene_m.transform.position, gene_p.transform.position, 0.1f);
-        entityPosition.x += Random.Range(1, 3);
-        entityPosition.z += Random.Range(1, 3);
+        entityPosition.x += Random.Range(1, 2) - Random.Range(1, 2);
+        entityPosition.z += Random.Range(1, 2) - Random.Range(1, 2);
         
         // Chance for parent family influence on entity type
         EntityTag entityTagM = gene_m.GetComponent<EntityTag>();
@@ -1218,10 +1383,21 @@ public class TickUpdate : MonoBehaviour {
         if (Random.Range(0, 10) >= 5) 
             entityName = entityTagM.name;
         
-        // Update physical characteristic genes
         GameObject newEntity = Instantiate( Resources.Load( entityName )) as GameObject;
         newEntity.name = entityName;
-        newEntity.transform.Translate(entityPosition);
+        
+        // Place offspring on terrain surface
+        entityPosition.y = 500f;
+        
+        RaycastHit hit_obj;
+        Ray ray_obj = new Ray(entityPosition, -Vector3.up);
+        
+        if ( Physics.Raycast(ray_obj, out hit_obj, 1000f, LayerMask.GetMask("Ground")) ) {
+            newEntity.transform.position = new Vector3(hit_obj.point.x, hit_obj.point.y + 0.5f, hit_obj.point.z);
+        } else {
+            newEntity.transform.position = new Vector3(this.transform.position.x, this.transform.position.y, this.transform.position.z);
+        }
+        
         
         newEntity.transform.parent = gene_m.transform.parent;
         
@@ -1540,7 +1716,7 @@ public class TickUpdate : MonoBehaviour {
         cameraObject.nearClipPlane  = 0.05f;
         cameraObject.farClipPlane   = (((float)RenderDistance * (float)100)) * 0.5f;
         
-        damageIndicationOffset = -1f;
+        damageIndicationOffset = 0f;
         
         
         
@@ -1551,7 +1727,6 @@ public class TickUpdate : MonoBehaviour {
         chunkSerializer.clientVersion  = clientVersion;
         chunkSerializer.ChunkSize = 100;
         chunkSerializer.chunkList = ChunkList;
-        chunkSerializer.generation = chunkGenerator;
         
         // Check world directory structure
         if (!chunkSerializer.openWorld(worldName))
@@ -1857,7 +2032,7 @@ public class TickUpdate : MonoBehaviour {
             case "structure":   return consoleStructure(paramaters);
             case "summon":      return consoleSummon(paramaters);
             case "give":        return consoleGive(paramaters);
-            case "set":         return consoleRule(paramaters);
+            case "rule":        return consoleRule(paramaters);
             case "time":        return consoleTime(paramaters);
             case "tp":          return consoleTP(paramaters);
             
@@ -2017,32 +2192,37 @@ public class TickUpdate : MonoBehaviour {
         if (paramaters.Length < 1) 
             return "Cannot generate structure";
         
-        for (int i=0; i < chunkGenerator.structures.Length; i++) {
+        
+        if (paramaters[1] == "save") {
+            saveCurrentStructureToFile();
             
-            if (chunkGenerator.structures[i].name != paramaters[1]) 
-                continue;
-            
-            for (int a=0; a < chunkGenerator.structures[i].items.Length; a++) {
-                
-                GameObject newItem = MonoBehaviour.Instantiate( Resources.Load( chunkGenerator.structures[i].items[a].name )) as GameObject;
-                GameObject currentChunk = getChunk(playerChunkX, playerChunkZ);
-                
-                Vector3 newPosition;
-                newPosition.x = Player.transform.position.x;
-                newPosition.y = Player.transform.position.y + 0.5f;
-                newPosition.z = Player.transform.position.z;
-                
-                newPosition += chunkGenerator.structures[i].items[a].position;
-                newItem.transform.position = newPosition;
-                
-                newItem.name = chunkGenerator.structures[i].items[a].name;
-                newItem.transform.parent = currentChunk.transform.GetChild(2).gameObject.transform;
-            }
-            
-            return "Structure placed '"+paramaters[1]+"'";
+            return "Structure saved to file '"+chunkGenerator.currentStructure.name+"'";
         }
         
-        return "Structure not found '"+paramaters[1]+"'";
+        
+        if (paramaters[1] == "load") {
+            
+            chunkGenerator.currentStructure.name = paramaters[2];
+            
+            if (loadStructureFileToCurrentStructure() == 0) 
+                return "Structure file not found '"+chunkGenerator.currentStructure.name+"'";
+            
+            return "Structure loaded from file '"+chunkGenerator.currentStructure.name+"'";
+        }
+        
+        
+        if (paramaters[1] == "place") {
+            
+            Vector3 playerPos;
+            playerPos.x = Mathf.Round(Player.transform.position.x);
+            playerPos.y = Mathf.Round(Player.transform.position.y) + 0.5f;
+            playerPos.z = Mathf.Round(Player.transform.position.z);
+            
+            
+            return "Structure placed ??????  '"+chunkGenerator.currentStructure.name+"'";
+        }
+        
+        return "Unknown structure function '"+paramaters[1]+"'";
     }
     
     

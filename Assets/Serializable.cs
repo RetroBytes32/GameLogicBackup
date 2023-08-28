@@ -4,6 +4,34 @@ using UnityEngine;
 
 
 [System.Serializable]
+public class StructureData {
+    
+    public string[]   name;
+    public string[]   data;
+    
+    public Vec3[]  position;
+    public Vec3[]  rotation;
+    public Vec3[]  scale;
+    
+    
+    public StructureData(int numberOfItems) {
+        
+        name = new string[numberOfItems];
+        data = new string[numberOfItems];
+        
+        position = new Vec3[numberOfItems];
+        rotation = new Vec3[numberOfItems];
+        scale    = new Vec3[numberOfItems];
+        
+    }
+    
+}
+
+
+
+
+
+[System.Serializable]
 public class Vec3 {
 	
 	public float x, y, z;
@@ -102,7 +130,9 @@ public class ChunkData {
 	public Vec3[]     staticRotation;
 	public Vec3[]     staticScale;
 	
+	// Item tag
 	public string[]   data;
+	public int[]      lifeTime;
 	
 	// Dynamic chunk entities
 	public int        entityCount;
@@ -222,6 +252,7 @@ public class ChunkData {
         staticScale     = new Vec3[staticCount];
         
         data            = new string[staticCount];
+        lifeTime        = new int[staticCount];
         
         // Dynamic entities
         entityCount     = dynamic_count;

@@ -6,10 +6,6 @@ using System.Threading;
 
 
 
-
-
-
-
 public class ChunkSerializer {
 	
 	public int clientVersion = 100;
@@ -62,8 +58,6 @@ public class ChunkSerializer {
 	
 	public WorldData  worldData;
 	
-	
-	public ChunkGeneration generation;
 	
 	public ChunkSerializer() {
         
@@ -170,15 +164,22 @@ public class ChunkSerializer {
             GameObject staticObject     = statics.gameObject.transform.GetChild(i).gameObject;
             
             saveChunk.staticName[i]     = staticObject.name;
+            
             saveChunk.staticPosition[i] = new Vec3(staticObject.transform.position.x, staticObject.transform.position.y, staticObject.transform.position.z);
-            saveChunk.staticRotation[i] = new Vec3(staticObject.transform.rotation.x, staticObject.transform.rotation.y, staticObject.transform.rotation.z);
+            
+            Vector3 eulerAngles = staticObject.transform.eulerAngles;
+            saveChunk.staticRotation[i] = new Vec3(eulerAngles.x, eulerAngles.y, eulerAngles.z);
+            
             saveChunk.staticScale[i]    = new Vec3(staticObject.transform.localScale.x, staticObject.transform.localScale.y, staticObject.transform.localScale.z);
             
-            ItemTag itemTag    = staticObject.GetComponent<ItemTag>();
-            saveChunk.data[i]  = itemTag.data;
+            ItemTag itemTag = staticObject.GetComponent<ItemTag>();
+            saveChunk.data[i]       = itemTag.data;
+            saveChunk.lifeTime[i]   = itemTag.lifeTime;
             
         }
         
+        
+        //
         // Save dynamic entities
         for (int i = 0; i < entities.gameObject.transform.childCount; i++) {
             
@@ -341,40 +342,20 @@ public class ChunkSerializer {
 	
 	
 	
-	
-	
-	
-	
-	
 	public void chunkBuild() {
         
         isChunkLoaded    = false;
         isLoading        = false;
         isChunkFinalized = true;
         
-        //float chunk_x    = loadingX;
-        //float chunk_z    = loadingZ;
-        //GameObject chunk = loading_chunk;
-        
         // Setup chunk biome type
         ChunkTag chunkTag = loading_chunk.transform.GetChild(0).GetComponent<ChunkTag>();
         chunkTag.biome = loadChunk.biome;
         chunkTag.isLoaded = true;
         
-        // Generate mesh
-        //GameObject chunkMeshObject = chunk.transform.GetChild(0).gameObject;
-        //Mesh       chunkMesh       = chunk.transform.GetChild(0).gameObject.GetComponent<MeshFilter>().mesh;
-        //Renderer   chunkRenderer   = chunkMeshObject.GetComponent<Renderer>();
-        
-        //MeshCollider chunkMeshCollider = chunkMeshObject.GetComponent<MeshCollider>();
-        
-        
-        // Hard generation values
-        
-        //int[]  index_array  = new int[ (101) * (101) * 6 ];
-        for (int z=0; z <= 100; z++) {
+        for (int z=0; z < 101; z++) {
             
-            for (int x=0; x <= 100; x++) {
+            for (int x=0; x < 101; x++) {
                 
                 float   vertex = loadChunk.vertexGrid[x, z];
                 Vec3    color  = loadChunk.colorGrid[x, z];
@@ -393,9 +374,6 @@ public class ChunkSerializer {
         
         return;
 	}
-	
-	
-	
 	
 	
 	
@@ -434,33 +412,16 @@ public class ChunkSerializer {
             Vector3 rotation = new Vector3(loadChunk.staticRotation[i].x, loadChunk.staticRotation[i].y, loadChunk.staticRotation[i].z);
             newStatic.transform.localRotation = Quaternion.Euler(rotation);
             
-            newStatic.transform.localScale = new Vector3(loadChunk.staticScale[i].x, loadChunk.staticScale[i].y, loadChunk.staticScale[i].z);
+            // Counter rotate the hit box
+            newStatic.transform.GetChild(0).transform.localRotation = Quaternion.Euler(-rotation);
             
-            //newStatic.SetActive(false);
+            newStatic.transform.localScale = new Vector3(loadChunk.staticScale[i].x, loadChunk.staticScale[i].y, loadChunk.staticScale[i].z);
             
             
             // Item tag data
             ItemTag itemTag = newStatic.GetComponent<ItemTag>();
-            itemTag.data    = loadChunk.data[i];
-            
-            
-            if (newStatic.name == "log") {
-            
-            Renderer staticMeshRenderer = newStatic.GetComponent<Renderer>();
-            if (staticMeshRenderer == null) continue;
-            
-            //staticMeshRenderer.material = mat_log;
-            
-            }
-            
-            if (newStatic.name == "leaves") {
-            
-            Renderer staticMeshRenderer = newStatic.GetComponent<Renderer>();
-            if (staticMeshRenderer == null) continue;
-            
-            //staticMeshRenderer.material = mat_leaf;
-            
-            }
+            itemTag.data          = loadChunk.data[i];
+            itemTag.lifeTime      = loadChunk.lifeTime[i];
             
         }
         
@@ -669,7 +630,10 @@ public class ChunkSerializer {
         
         worldVersion = formatter.Deserialize(fileStream_load) as WorldVersion;
         
+        fileStream_load.Close();
+        
         if (worldVersion.clientVersion != clientVersion) return false;
+        
         
         
         // Read world data
@@ -680,6 +644,7 @@ public class ChunkSerializer {
         worldData = formatter.Deserialize(fileStream_load) as WorldData;
         
         fileStream_load.Close();
+        
         
         
         TickUpdate gameRulesObject   = GameObject.Find("GameRules").GetComponent<TickUpdate>();
@@ -761,7 +726,8 @@ public class ChunkSerializer {
 	
 	public void destroyWorld(string world_name) {
         
-        if (System.IO.Directory.Exists(worldsPath + world_name)) { System.IO.Directory.Delete(worldsPath + world_name, true); }
+        if (System.IO.Directory.Exists(worldsPath + world_name)) 
+            System.IO.Directory.Delete(worldsPath + world_name, true);
         
 	}
 	
