@@ -776,7 +776,12 @@ public class ActorTag : MonoBehaviour {
                                 
                                 GameObject consumable = Instantiate( Resources.Load( itemName )) as GameObject;
                                 consumable.name = itemName;
+                                
+                                // Place the item in the actors mouth
                                 consumable.transform.parent = transform.GetChild(1).transform.GetChild(1).transform;
+                                
+                                // Set item lifetime
+                                consumable.GetComponent<ItemTag>().lifeTime = 300;
                                 
                                 consumable.transform.localPosition = new Vector3(0f, 0f, 0.65f);
                                 consumable.transform.localScale    = new Vector3(1f, 1f, 1f);
@@ -793,7 +798,7 @@ public class ActorTag : MonoBehaviour {
                                 
                                 targetActorTag.isDying = true;
                                 
-                                hunger -= 40;
+                                hunger -= 80;
                             }
                             
                         }
@@ -1056,6 +1061,45 @@ public class ActorTag : MonoBehaviour {
 	}
     
     
+    public void dropItemsOnDeath() {
+        
+        LayerMask GroundLayerMask = LayerMask.GetMask("Ground");
+        
+        for (int i=0; i < DropOnDeath.Length; i++) {
+            
+            int summonCount = Random.Range(DropOnDeath[i].min, DropOnDeath[i].max);
+            
+            for (int c=0; c <= summonCount; c++) {
+                
+                GameObject staticList = this.transform.parent.transform.parent.transform.GetChild(2).gameObject;
+                
+                Vector3 thisPos = this.transform.position;
+                
+                thisPos.x += Random.Range(0f, 2f) - Random.Range(0f, 2f);
+                thisPos.z += Random.Range(0f, 2f) - Random.Range(0f, 2f);
+                
+                GameObject newObject = Instantiate( Resources.Load( DropOnDeath[i].name )) as GameObject;
+                newObject.name = DropOnDeath[i].name;
+                newObject.transform.parent = staticList.transform;
+                newObject.transform.localRotation = Quaternion.Euler(new Vector3( 0f, Random.Range(0f, 360f), 0f));
+                
+                thisPos.y = 500f;
+                
+                RaycastHit hit_obj;
+                Ray ray_obj = new Ray(thisPos, -Vector3.up);
+                
+                if ( Physics.Raycast(ray_obj, out hit_obj, 1000f, GroundLayerMask) ) {
+                    newObject.transform.position = new Vector3(hit_obj.point.x, hit_obj.point.y + 0.18f, hit_obj.point.z);
+                } else {
+                    newObject.transform.position = new Vector3(this.transform.position.x, this.transform.position.y, this.transform.position.z);
+                }
+                
+            }
+            
+        }
+        
+    }
+    
     
     
     
@@ -1070,42 +1114,7 @@ public class ActorTag : MonoBehaviour {
                 
                 Destroy(transform.gameObject);
                 
-                // Drop items on death
-                // TODO move this out, this should only be animation shit
-                LayerMask GroundLayerMask = LayerMask.GetMask("Ground");
-                
-                for (int i=0; i < DropOnDeath.Length; i++) {
-                    
-                    int summonCount = Random.Range(DropOnDeath[i].min, DropOnDeath[i].max);
-                    
-                    for (int c=0; c <= summonCount; c++) {
-                        
-                        GameObject staticList = this.transform.parent.transform.parent.transform.GetChild(2).gameObject;
-                        
-                        Vector3 thisPos = this.transform.position;
-                        
-                        thisPos.x += Random.Range(0f, 2f) - Random.Range(0f, 2f);
-                        thisPos.z += Random.Range(0f, 2f) - Random.Range(0f, 2f);
-                        
-                        GameObject newObject = Instantiate( Resources.Load( DropOnDeath[i].name )) as GameObject;
-                        newObject.name = DropOnDeath[i].name;
-                        newObject.transform.parent = staticList.transform;
-                        newObject.transform.localRotation = Quaternion.Euler(new Vector3( 0f, Random.Range(0f, 360f), 0f));
-                        
-                        thisPos.y = 500f;
-                        
-                        RaycastHit hit_obj;
-                        Ray ray_obj = new Ray(thisPos, -Vector3.up);
-                        
-                        if ( Physics.Raycast(ray_obj, out hit_obj, 1000f, GroundLayerMask) ) {
-                            newObject.transform.position = new Vector3(hit_obj.point.x, hit_obj.point.y + 0.18f, hit_obj.point.z);
-                        } else {
-                            newObject.transform.position = new Vector3(this.transform.position.x, this.transform.position.y, this.transform.position.z);
-                        }
-                        
-                    }
-                    
-                }
+                dropItemsOnDeath();
                 
                 return;
             }

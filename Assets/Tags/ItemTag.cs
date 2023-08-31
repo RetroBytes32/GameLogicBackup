@@ -6,7 +6,7 @@ public class ItemTag : MonoBehaviour {
     
     //   name=value;name=value;
     public string data;
-    
+    public int    lifeTime = -1;
     
     
     public void addTag(string name, string value) {
