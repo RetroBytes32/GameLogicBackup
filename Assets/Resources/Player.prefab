@@ -408,20 +408,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   controller: {fileID: 420750604200002037}
   Speed: 10
-  Gravity: 30
-  JumpHeight: 10
+  Gravity: 0.2
+  JumpForce: 2
+  flyCamSpeed: 40
+  flyCamAcceleration: 3
+  flyCamMimimumSpeedCutoff: 0.1
+  flyCamDamping: 0.8
   groundCheck: {fileID: 7197341850623363748}
   groundDistance: 0.5
   groundMask:
     serializedVersion: 2
     m_Bits: 30976
-  readyToJump: 0
+  readyToJump: 1
   jumpTimer: 0
-  jumpCoolDown: 2
+  jumpCoolDown: 21
   isGrounded: 0
   PlayerSourceTransform: {fileID: 5679565325963172723}
   Velocity: {x: 0, y: 0, z: 0}
+  camearFov: 65
+  fovOffset: 0
   tickUpdate: {fileID: 0}
+  isDoubleFast: 0
 --- !u!1 &3666942518401166115
 GameObject:
   m_ObjectHideFlags: 0
@@ -825,6 +832,8 @@ MonoBehaviour:
   attackTimer: 0
   canAttack: 0
   playerAttackDamage: 1
+  playerstrikingForce: 1
+  playerTargetItemClass: 
   Distance: 4.5
   attackAnimationSwingRate: 4
   attackAnimationRetractRate: 0.24
@@ -887,7 +896,7 @@ CharacterController:
   m_Enabled: 1
   serializedVersion: 2
   m_Height: 2.5
-  m_Radius: 0.5
+  m_Radius: 0.4
   m_SlopeLimit: 70
   m_StepOffset: 0.001
   m_SkinWidth: 0.08

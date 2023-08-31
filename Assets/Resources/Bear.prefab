@@ -204,8 +204,7 @@ MonoBehaviour:
   stress: 0
   hunger: 0
   memories: 
-  AttackEntities:
-  - Sheep
+  AttackEntities: []
   FleeFromEntities: []
   DropOnDeath:
   - name: bone
@@ -249,6 +248,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gene_string: 
+  doUpdateGenetics: 0
   Body: {fileID: 3766844368731954465}
   Neck: {fileID: 6313538162445990760}
   LegLeft: {fileID: 314074422983851836}

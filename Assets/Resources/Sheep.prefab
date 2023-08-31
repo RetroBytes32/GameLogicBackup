@@ -787,7 +787,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entityTag: {fileID: 2457079166136750352}
   isActive: 1
-  chanceToChangeDirection: 0.08
+  chanceToChangeDirection: 0.1
   chanceToFocusOnPlayer: 0.09
   chanceToFocusOnEntity: 0.1
   chanceToAttackPlayer: 0
@@ -807,9 +807,9 @@ MonoBehaviour:
   memories: 
   AttackEntities: []
   FleeFromEntities:
-  - Alligator
-  - Bear
-  - Wolf
+  - Alligator__
+  - Bear__
+  - Wolf__
   DropOnDeath:
   - name: meat
     min: 1
@@ -852,6 +852,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gene_string: 
+  doUpdateGenetics: 0
   Body: {fileID: 2396782193647683176}
   Neck: {fileID: 6864162137103935796}
   LegLeft: {fileID: 6210645785002885997}

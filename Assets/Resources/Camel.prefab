@@ -201,11 +201,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entityTag: {fileID: 4008786666549160401}
   isActive: 1
-  chanceToChangeDirection: 0.08
+  chanceToChangeDirection: 0.1
   chanceToFocusOnPlayer: 0.13
   chanceToFocusOnEntity: 0.1
   chanceToAttackPlayer: 0
-  chanceToWalk: 0.09
+  chanceToWalk: 0.07
   distanceToFocusOnPlayer: 20
   distanceToFocusOnEntity: 20
   distanceToAttackPlayer: 0
@@ -257,6 +257,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gene_string: 
+  doUpdateGenetics: 0
   Body: {fileID: 4570294137618959883}
   Neck: {fileID: 5821493225949227693}
   LegLeft: {fileID: 9113480276036940005}

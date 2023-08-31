@@ -143,7 +143,7 @@ MonoBehaviour:
   chanceToFocusOnPlayer: 0.09
   chanceToFocusOnEntity: 0.1
   chanceToAttackPlayer: 0.0001
-  chanceToWalk: 0.1
+  chanceToWalk: 0.09
   distanceToFocusOnPlayer: 30
   distanceToFocusOnEntity: 20
   distanceToAttackPlayer: 8
@@ -198,6 +198,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gene_string: 
+  doUpdateGenetics: 0
   Body: {fileID: 8460132694034818173}
   Neck: {fileID: 5679702510805160010}
   LegLeft: {fileID: 3028337136516762392}

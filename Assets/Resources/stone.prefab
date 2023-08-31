@@ -112,6 +112,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   data: 
+  lifeTime: -1
 --- !u!1 &1970212404657779032
 GameObject:
   m_ObjectHideFlags: 0
