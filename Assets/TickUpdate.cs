@@ -418,46 +418,6 @@ public class TickUpdate : MonoBehaviour {
         
         
         
-        //
-        // Console count down timer fade
-        
-        if (CommandConsoleTimer > -80) {
-            
-            CommandConsoleTimer--;
-            
-            // Fade out start
-            if (CommandConsoleTimer < 0) {
-                
-                CommandConsoleTimer = 0;
-                
-                CommandConsoleFade -= 0.008f;
-                
-                Text       consoleLine  = CommandConsole.transform.GetChild(0).GetChild(1).GetChild(1).GetComponent<Text>();
-                Image      consoleBack  = CommandConsole.transform.GetChild(0).GetChild(1).GetChild(0).GetComponent<Image>();
-                
-                consoleBack.color = new Color(consoleBack.color.r, consoleBack.color.g, consoleBack.color.b, CommandConsoleFade);
-                consoleLine.color = new Color(consoleLine.color.r, consoleLine.color.g, consoleLine.color.b, consoleLine.color.a * (CommandConsoleFade + 0.7f));
-            }
-            
-            // Fade out end
-            if (CommandConsoleFade < 0) {
-                
-                CommandConsoleFade = 0.3f;
-                
-                CommandConsoleTimer = -80;
-                
-                Text       consoleLine  = CommandConsole.transform.GetChild(0).GetChild(1).GetChild(1).GetComponent<Text>();
-                Image      consoleBack  = CommandConsole.transform.GetChild(0).GetChild(1).GetChild(0).GetComponent<Image>();
-                
-                consoleBack.color = new Color(consoleBack.color.r, consoleBack.color.g, consoleBack.color.b, CommandConsoleFade);
-                consoleLine.color = new Color(consoleLine.color.r, consoleLine.color.g, consoleLine.color.b, CommandConsoleFade);
-                
-                GameObject consoleTextObject = CommandConsole.transform.GetChild(0).GetChild(1).gameObject;
-                consoleTextObject.SetActive(false);
-            }
-            
-        }
-        
         
         //
         // Global tick counter
@@ -509,7 +469,8 @@ public class TickUpdate : MonoBehaviour {
                 //
                 // Check player fall reset
                 //
-                if (reset_player == true) {
+                
+                if (reset_player) {
                     
                     reset_player = false;
                     
@@ -596,42 +557,126 @@ public class TickUpdate : MonoBehaviour {
                 
             }
             
-            return;
         }
         
         
         
+        //
+        // Console count down timer fade
+        
+        updateCommandConsoleFadeoutTimer();
         
         
         
         //
         // Camera damage indication animation cycle
         
-        if (runCameraDamageAnimation) {
+        if (runCameraDamageAnimation) 
+            animationDamageIndicator();
+        
+        
+        
+        //
+        // Check player death
+        
+        checkPlayerDeath();
+        
+        
+        return;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	//
+	// Fade out the command console log
+	
+	void updateCommandConsoleFadeoutTimer() {
+        
+        if (CommandConsoleTimer > -80) {
             
-            if (damageIndicationOffset == 0f) {
-                if (Random.Range(0, 10) > 4) {
-                    damageIndicationOffset =  40f;
-                } else {
-                    damageIndicationOffset = -40f;
-                }
+            CommandConsoleTimer--;
+            
+            // Fade out start
+            if (CommandConsoleTimer < 0) {
+                
+                CommandConsoleTimer = 0;
+                
+                CommandConsoleFade -= 0.008f;
+                
+                Text       consoleLine  = CommandConsole.transform.GetChild(0).GetChild(1).GetChild(1).GetComponent<Text>();
+                Image      consoleBack  = CommandConsole.transform.GetChild(0).GetChild(1).GetChild(0).GetComponent<Image>();
+                
+                consoleBack.color = new Color(consoleBack.color.r, consoleBack.color.g, consoleBack.color.b, CommandConsoleFade);
+                consoleLine.color = new Color(consoleLine.color.r, consoleLine.color.g, consoleLine.color.b, consoleLine.color.a * (CommandConsoleFade + 0.7f));
             }
             
-            if (damageIndicationOffset > 0f) {
-                damageIndicationOffset -= 10f;
-            } else {
-                damageIndicationOffset += 10f;
-            }
-            
-            if ((damageIndicationOffset > -10f) & (damageIndicationOffset < 10f)) {
-                damageIndicationOffset = 0f;
-                runCameraDamageAnimation = false;
+            // Fade out end
+            if (CommandConsoleFade < 0) {
+                
+                CommandConsoleFade = 0.3f;
+                
+                CommandConsoleTimer = -80;
+                
+                Text       consoleLine  = CommandConsole.transform.GetChild(0).GetChild(1).GetChild(1).GetComponent<Text>();
+                Image      consoleBack  = CommandConsole.transform.GetChild(0).GetChild(1).GetChild(0).GetComponent<Image>();
+                
+                consoleBack.color = new Color(consoleBack.color.r, consoleBack.color.g, consoleBack.color.b, CommandConsoleFade);
+                consoleLine.color = new Color(consoleLine.color.r, consoleLine.color.g, consoleLine.color.b, CommandConsoleFade);
+                
+                GameObject consoleTextObject = CommandConsole.transform.GetChild(0).GetChild(1).gameObject;
+                consoleTextObject.SetActive(false);
             }
             
         }
         
-        //
-        // Check player death
+    }
+	
+	
+	
+	//
+	// Player damage indicator camera shift
+	
+	void animationDamageIndicator() {
+        
+        if (damageIndicationOffset == 0f) {
+            if (Random.Range(0, 10) > 4) {
+                damageIndicationOffset =  40f;
+            } else {
+                damageIndicationOffset = -40f;
+            }
+        }
+        
+        if (damageIndicationOffset > 0f) {
+            damageIndicationOffset -= 10f;
+        } else {
+            damageIndicationOffset += 10f;
+        }
+        
+        if ((damageIndicationOffset > -10f) & (damageIndicationOffset < 10f)) {
+            damageIndicationOffset = 0f;
+            runCameraDamageAnimation = false;
+        }
+        
+    }
+	
+	
+	
+	
+	//
+	// Check if the player is dead
+	
+	void checkPlayerDeath() {
         
         if ((inventory.health <= 0)) {
             if (!doDebugMode) {
@@ -647,12 +692,7 @@ public class TickUpdate : MonoBehaviour {
         }
         
         return;
-	}
-	
-	
-	
-	
-	
+    }
 	
 	
 	
@@ -661,7 +701,6 @@ public class TickUpdate : MonoBehaviour {
 	
 	//
 	// Update world chunks
-	//
 	
 	void updateChunks() {
         
@@ -723,9 +762,56 @@ public class TickUpdate : MonoBehaviour {
 	
 	
 	
+	
+	//
+	// Add object to the current structure
+	
+	public void addObjectToStructure(string name, string data, Vector3 position, Vector3 rotation, Vector3 scale) {
+        
+        StructureItem newStructureItem = new StructureItem();
+        newStructureItem.name = name;
+        newStructureItem.data = data;
+        
+        newStructureItem.position = position;
+        newStructureItem.rotation = rotation;
+        newStructureItem.scale    = scale;
+        
+        chunkGenerator.currentStructure.items.Add(newStructureItem);
+        
+        return;
+    }
+	
+	
+	
+	
+	
+	
+	
+	//
+	// Remove an object from the structure
+	
+	public void removeObjectFromStructure(Vector3 position) {
+        int numberOfItems = chunkGenerator.currentStructure.items.Count;
+        
+        for (int i=0; i < numberOfItems; i++) {
+            
+            if (chunkGenerator.currentStructure.items[i].position != position) 
+                continue;
+            
+            chunkGenerator.currentStructure.items.RemoveAt(i);
+            
+            break;
+        }
+        return;
+    }
+	
+	
+	
+	
 	//
 	// Save current structure to an external file
-	public void saveCurrentStructureToFile() {
+	
+	public void saveCurrentStructureToFile(string filename) {
         
         int numberOfItems = chunkGenerator.currentStructure.items.Count;
         
@@ -746,6 +832,8 @@ public class TickUpdate : MonoBehaviour {
         string structuresPath = "structures/";
         if (!System.IO.Directory.Exists(structuresPath)) 
             System.IO.Directory.CreateDirectory(structuresPath);
+        
+        chunkGenerator.currentStructure.name = filename;
         
         // Check if the file already exists
         string filePath = structuresPath + chunkGenerator.currentStructure.name + ".structure";
@@ -771,14 +859,19 @@ public class TickUpdate : MonoBehaviour {
 	
 	
 	
+	
+	
 	//
 	// Load a structure from an external file
-	public int loadStructureFileToCurrentStructure() {
+	
+	public int loadStructureFileToCurrentStructure(string filename) {
         
         // Check structures directory
         string structuresPath = "structures/";
         if (!System.IO.Directory.Exists(structuresPath)) 
             System.IO.Directory.CreateDirectory(structuresPath);
+        
+        chunkGenerator.currentStructure.name = filename;
         
         // Check if the file does not exist
         string filePath = structuresPath + chunkGenerator.currentStructure.name + ".structure";
@@ -790,7 +883,7 @@ public class TickUpdate : MonoBehaviour {
         formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
         
         System.IO.FileStream fileStream_load;
-        fileStream_load = System.IO.File.Open(structuresPath + filePath, System.IO.FileMode.Open, System.IO.FileAccess.Read);
+        fileStream_load = System.IO.File.Open(filePath, System.IO.FileMode.Open, System.IO.FileAccess.Read);
         
         StructureData structureData = new StructureData(2048);
         structureData = formatter.Deserialize(fileStream_load) as StructureData;
@@ -825,8 +918,71 @@ public class TickUpdate : MonoBehaviour {
 	
 	
 	
+	//
+	// Place a structure into the world at the player position
+	
+	public void placeStructureInWorld(Vector3 position) {
+        
+        for (int i=0; i < chunkGenerator.currentStructure.items.Count; i++) {
+            
+            // Get target chunk
+            float chunkX = Mathf.Round(position.x / 100) * 100;
+            float chunkZ = Mathf.Round(position.z / 100) * 100;
+            
+            GameObject targetChunk = getChunk(chunkX, chunkZ);
+            if (targetChunk == null)
+                return;
+            
+            GameObject newStatic = MonoBehaviour.Instantiate( Resources.Load( chunkGenerator.currentStructure.items[i].name )) as GameObject;
+            newStatic.name             = chunkGenerator.currentStructure.items[i].name;
+            newStatic.transform.parent = targetChunk.transform.GetChild(2).gameObject.transform;
+            
+            newStatic.transform.position = chunkGenerator.currentStructure.items[i].position;
+            
+            
+            
+            // Rotate the whole structure
+            Vector3 targetPosition = new Vector3(0f, 0f, 0f);
+            newStatic.transform.RotateAround(targetPosition, Vector3.up, chunkGenerator.structureRotation);
+            // Counter rotate the hit box
+            Vector3 counterRotation = new Vector3(chunkGenerator.structureRotation, 0f, 0f);
+            newStatic.transform.GetChild(0).transform.localRotation = Quaternion.Euler(-counterRotation);
+            
+            
+            
+            // Rotate local
+            newStatic.transform.localRotation = Quaternion.Euler(chunkGenerator.currentStructure.items[i].rotation);
+            // Counter rotate the hit box
+            counterRotation = chunkGenerator.currentStructure.items[i].rotation;
+            newStatic.transform.GetChild(0).transform.localRotation = Quaternion.Euler(-counterRotation);
+            
+            
+            
+            // Scale local
+            newStatic.transform.localScale = chunkGenerator.currentStructure.items[i].scale;
+            
+            // Translate to player position
+            newStatic.transform.position += position;
+            
+            // Setup item state
+            ItemTag itemTag = newStatic.GetComponent<ItemTag>();
+            itemTag.data       = chunkGenerator.currentStructure.items[i].data;
+            itemTag.lifeTime   = -1;
+            
+        }
+        
+    }
 	
 	
+	
+	//
+	// Clear the current structure
+	
+	public void clearCurrentStructure() {
+        chunkGenerator.currentStructure.name = "";
+        chunkGenerator.currentStructure.items.Clear();
+        chunkGenerator.currentStructure.entities.Clear();
+    }
 	
 	
 	
@@ -848,7 +1004,7 @@ public class TickUpdate : MonoBehaviour {
         GameObject chunkObject = ChunkList.transform.GetChild(staticChunkCounter).gameObject;
         GameObject staticList  = chunkObject.transform.GetChild(2).gameObject;
         
-        int numberOfObjectsPerTick = 80;
+        int numberOfObjectsPerTick = 40;
         
         for (int i=0; i < numberOfObjectsPerTick; i++) {
             
@@ -860,9 +1016,8 @@ public class TickUpdate : MonoBehaviour {
                 
                 staticChunkCounter++;
                 
-                // Check last chunk
                 if (staticChunkCounter >= ChunkList.transform.childCount)
-                staticChunkCounter = 0;
+                    staticChunkCounter = 0;
                 
                 chunkObject = ChunkList.transform.GetChild(staticChunkCounter).gameObject;
                 staticList  = chunkObject.transform.GetChild(2).gameObject;
@@ -2133,6 +2288,16 @@ public class TickUpdate : MonoBehaviour {
         if (paramaters.Length > 2) 
             status = paramaters[2];
         
+        if (ruleName == "structure") {
+            if (status=="true")  {chunkGenerator.doSavePlacedObjectsToStructure = true; chunkGenerator.addWorldDecorations = false; return "Structure saving enabled";}
+            if (status=="false") {chunkGenerator.doSavePlacedObjectsToStructure = false; return "Structure saving disabled";}
+        }
+        
+        if (ruleName == "weathercycle") {
+            if (status=="true")  {doWeatherCycle = true;  return "Weather cycle enabled";}
+            if (status=="false") {doWeatherCycle = false; return "Weather cycle disabled";}
+        }
+        
         if (ruleName == "weathercycle") {
             if (status=="true")  {doWeatherCycle = true;  return "Weather cycle enabled";}
             if (status=="false") {doWeatherCycle = false; return "Weather cycle disabled";}
@@ -2190,36 +2355,39 @@ public class TickUpdate : MonoBehaviour {
     string consoleStructure(string[] paramaters) {
         
         if (paramaters.Length < 1) 
-            return "Cannot generate structure";
+            return "Unknown structure function '"+paramaters[1]+"'";
         
-        
-        if (paramaters[1] == "save") {
-            saveCurrentStructureToFile();
+        // Place a structure
+        if (paramaters[1] == "place") {
+            Vector3 playerPos;
+            playerPos.x = Mathf.Round(Player.transform.position.x);
+            playerPos.y = Mathf.Round(Player.transform.position.y);
+            playerPos.z = Mathf.Round(Player.transform.position.z);
             
+            placeStructureInWorld(playerPos);
+            return "Structure placed '"+chunkGenerator.currentStructure.name+"'";
+        }
+        
+        // Clear the current structure
+        if (paramaters[1] == "clear") {
+            clearCurrentStructure();
+            return "Structure placed '"+chunkGenerator.currentStructure.name+"'";
+        }
+        
+        if (paramaters.Length < 2) 
+            return "Unknown structure function '"+paramaters[1]+"'";
+        
+        // Save a structure
+        if (paramaters[1] == "save") {
+            saveCurrentStructureToFile(paramaters[2]);
             return "Structure saved to file '"+chunkGenerator.currentStructure.name+"'";
         }
         
-        
+        // Load a structure
         if (paramaters[1] == "load") {
-            
-            chunkGenerator.currentStructure.name = paramaters[2];
-            
-            if (loadStructureFileToCurrentStructure() == 0) 
+            if (loadStructureFileToCurrentStructure(paramaters[2]) == 0) 
                 return "Structure file not found '"+chunkGenerator.currentStructure.name+"'";
-            
             return "Structure loaded from file '"+chunkGenerator.currentStructure.name+"'";
-        }
-        
-        
-        if (paramaters[1] == "place") {
-            
-            Vector3 playerPos;
-            playerPos.x = Mathf.Round(Player.transform.position.x);
-            playerPos.y = Mathf.Round(Player.transform.position.y) + 0.5f;
-            playerPos.z = Mathf.Round(Player.transform.position.z);
-            
-            
-            return "Structure placed ??????  '"+chunkGenerator.currentStructure.name+"'";
         }
         
         return "Unknown structure function '"+paramaters[1]+"'";
@@ -2261,12 +2429,12 @@ public class TickUpdate : MonoBehaviour {
                 case "midnight":
                     dayNightCycleCurrent = 280f;
                     updateDayNightCycle();
-                    return "Time set to night";
+                    return "Time set to midnight";
                     
                 case "noon":
                     dayNightCycleCurrent = 100f;
                     updateDayNightCycle();
-                    return "Time set to night";
+                    return "Time set to noon";
                     
                 default:
                     break;
@@ -2280,11 +2448,6 @@ public class TickUpdate : MonoBehaviour {
     
     
 }
-
-
-
-
-
 
 
 

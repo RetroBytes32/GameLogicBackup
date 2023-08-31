@@ -5395,7 +5395,7 @@ MonoBehaviour:
   worldName: 
   worldSpawn: {x: 0, y: 0, z: 0}
   worldSeed: 0
-  doDebugMode: 1
+  doDebugMode: 0
   doSaveChunks: 1
   doDayNightCycle: 1
   doWeatherCycle: 1
@@ -5420,7 +5420,6 @@ MonoBehaviour:
   TickRate: 3
   TickCounter: 0
   numberOfChildren: 1
-  breedingCoolDownTimer: 0
   gene_m: {fileID: 0}
   gene_p: {fileID: 0}
   items:
@@ -5578,13 +5577,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a227ee2d159563a4d8ca967d34d9a697, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ChunkList: {fileID: 101342563}
-  gameRules: {fileID: 650475984}
   worldSeed: 0
   currentChunkSeed: 0
   reloadWorldChunks: 0
   addWorldDecorations: 1
   addWorldEntities: 1
+  generateFlatWorld: 1
   noise_x: 0.03
   noise_y: -1
   noise_z: 0.03
@@ -5760,26 +5758,24 @@ MonoBehaviour:
       - {r: 0.17254902, g: 0.12941177, b: 0.09411765, a: 0}
       - {r: 0.3019608, g: 0.23921569, b: 0.1882353, a: 0}
     treeSpawn: []
-  structures:
-  - name: base_3x3
+  structuresToGenerate:
+  - house0
+  - hut
+  - house1
+  structureRotation: 0
+  doSavePlacedObjectsToStructure: 0
+  currentStructure:
+    name: 
     items: []
-    fills:
-    - name: stone
-      from: {x: -3, y: 0, z: -3}
-      to: {x: 3, y: 0, z: 3}
-    entities: []
-  - name: base_4x4
-    items: []
-    fills:
-    - name: stone
-      from: {x: -4, y: 0, z: -4}
-      to: {x: 4, y: 0, z: 4}
     entities: []
   WaterColor: {r: 0.08627451, g: 0.29411766, b: 0.62352943, a: 0.49019608}
   MudColor: {r: 0.18867922, g: 0.07667089, b: 0.031149866, a: 0}
   MudColorMult: 0.03
   waterDepthMin: -2
   waterDepthMult: 2.4
+  ChunkList: {fileID: 101342563}
+  gameRules: {fileID: 650475984}
+  tickUpdate: {fileID: 650475985}
 --- !u!1 &655610319
 GameObject:
   m_ObjectHideFlags: 0

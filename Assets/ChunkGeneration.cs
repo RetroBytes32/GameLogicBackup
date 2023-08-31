@@ -211,11 +211,6 @@ public class PerlinOctive {
 [System.Serializable]
 public class ChunkGeneration : MonoBehaviour {
     
-	public GameObject ChunkList;
-	public GameObject gameRules;
-    
-    
-    
 	[Space(10)]
 	[Header("Current world")]
 	[Space(5)]
@@ -234,6 +229,7 @@ public class ChunkGeneration : MonoBehaviour {
     
 	public bool     addWorldDecorations;
 	public bool     addWorldEntities;
+    public bool     generateFlatWorld;
     
     
     
@@ -265,10 +261,19 @@ public class ChunkGeneration : MonoBehaviour {
 	[Header("Structures")]
 	[Space(5)]
     
+    public string[]  structuresToGenerate;
+    
+    public int  structureRotation;
+    
+    
+    
+    [Space(10)]
+	[Header("Structure saving")]
+	[Space(5)]
+    
     public bool doSavePlacedObjectsToStructure = false;
     
     public Structure  currentStructure;
-    
     
     
     
@@ -285,6 +290,12 @@ public class ChunkGeneration : MonoBehaviour {
     
     
     
+	public GameObject ChunkList;
+	public GameObject gameRules;
+    
+    public TickUpdate tickUpdate;
+    
+    
 	int           updateCounter = 0;
     
 	int[]         index_array_cache;
@@ -299,6 +310,8 @@ public class ChunkGeneration : MonoBehaviour {
     //
     
 	public GameObject generateChunk(float chunk_x, float chunk_z, float chunk_sz, bool addStaticObjects, bool dummyChunk) {
+        
+        GameObject oldChunk = currentChunk;
         
         // Generate a new chunk
         currentChunk = Instantiate( Resources.Load( "chunk" )) as GameObject;
@@ -317,7 +330,6 @@ public class ChunkGeneration : MonoBehaviour {
         newStaticContainer.SetActive(false);
         
         // Calculate the chunk seed
-        
         currentChunkSeed = worldSeed + ( (int)chunk_x + (int)chunk_z );
         Random.InitState( currentChunkSeed );
         
@@ -385,8 +397,13 @@ public class ChunkGeneration : MonoBehaviour {
         
         
         
-        
-        
+        // Check generate a new village in the last chunk
+        if ((addWorldDecorations) & (Random.Range(0, 3) == 1)) {
+            
+            if (oldChunk != null) 
+                generateVillage(oldChunk);
+            
+        }
         
         
         //
@@ -595,18 +612,18 @@ public class ChunkGeneration : MonoBehaviour {
                 //
                 // Water table
                 //
-                
-                if (noise_total < 0f)
-                color_total = Color.Lerp(MudColor, biomes[biomeIndex].base_color, 0.8f);
-                if (noise_total < -0.2f)
-                color_total = Color.Lerp(MudColor, biomes[biomeIndex].base_color, 0.6f);
-                if (noise_total < -0.5f)
-                color_total = Color.Lerp(MudColor, biomes[biomeIndex].base_color, 0.4f);
-                if (noise_total < -0.7f)
-                color_total = Color.Lerp(MudColor, biomes[biomeIndex].base_color, 0.2f);
-                if (noise_total < -1f)
-                color_total = Color.Lerp(MudColor, biomes[biomeIndex].base_color, 0.1f);
-                
+                if (!generateFlatWorld) {
+                    if (noise_total < 0f)
+                    color_total = Color.Lerp(MudColor, biomes[biomeIndex].base_color, 0.8f);
+                    if (noise_total < -0.2f)
+                    color_total = Color.Lerp(MudColor, biomes[biomeIndex].base_color, 0.6f);
+                    if (noise_total < -0.5f)
+                    color_total = Color.Lerp(MudColor, biomes[biomeIndex].base_color, 0.4f);
+                    if (noise_total < -0.7f)
+                    color_total = Color.Lerp(MudColor, biomes[biomeIndex].base_color, 0.2f);
+                    if (noise_total < -1f)
+                    color_total = Color.Lerp(MudColor, biomes[biomeIndex].base_color, 0.1f);
+                }
                 
                 if (noise_total < 0f)
                     noise_total *= waterDepthMult;
@@ -631,6 +648,10 @@ public class ChunkGeneration : MonoBehaviour {
                 
                 if (noise_total > 0f) {
                     
+                    // Check flat world generation
+                    if (generateFlatWorld) 
+                        noise_total = 0f;
+                    
                     float MountainCapHeight = biomes[biomeIndex].Mountain_cap;
                     
                     if (MountainCapHeight == 0f)
@@ -652,8 +673,16 @@ public class ChunkGeneration : MonoBehaviour {
                     
                 }
                 
+                // Check flat world generation
+                if (generateFlatWorld) 
+                    noise_total = 0f;
                 
-                
+                // Add random color variation
+                float variation = 0.024f;
+                float colorVar = Random.Range(0f, variation) - Random.Range(0f, variation);
+                color_total.r += colorVar;
+                color_total.g += colorVar;
+                color_total.b += colorVar;
                 
                 
                 
@@ -669,7 +698,7 @@ public class ChunkGeneration : MonoBehaviour {
                 continue;
             }
             
-        continue;
+            continue;
         }
         
         
@@ -760,9 +789,7 @@ public class ChunkGeneration : MonoBehaviour {
         */
         
         
-        //
         // Initiate cached arrays
-        
         int array_size = (101) * (101) * 6;
         index_array_cache = new int[array_size];
         vertex_uv_cache   = new Vector2[array_size];
@@ -793,11 +820,7 @@ public class ChunkGeneration : MonoBehaviour {
             vert++;
         }
         
-        
-        
-        //
         // Generate UV array
-        
         int index=0;
         for (int u=0; u < 100; u++) {
             
@@ -813,6 +836,78 @@ public class ChunkGeneration : MonoBehaviour {
         
         return;
 	}
+    
+    
+    
+    
+    
+    
+    //
+    // Generate a village in this chunk
+    
+    public void generateVillage(GameObject chunk) {
+        
+        int numberOfBuilds   = 10;
+        float spawnRadius    = 100f;
+        
+        int randNumberOfFeatures = Random.Range((numberOfBuilds / 2), numberOfBuilds);
+        
+        for (int i=0; i < randNumberOfFeatures; i++) {
+            
+            // Select a random structure
+            int randomStructure = Random.Range(0, structuresToGenerate.Length);
+            string structureName = structuresToGenerate[randomStructure];
+            
+            tickUpdate.clearCurrentStructure();
+            tickUpdate.loadStructureFileToCurrentStructure(structureName);
+            
+            // Random position
+            Vector3 featurePosition = new Vector3(0f, 0f, 0f);
+            featurePosition.x = Random.Range(0f, spawnRadius) - Random.Range(0f, spawnRadius);
+            featurePosition.y = 500f;
+            featurePosition.z = Random.Range(0f, spawnRadius) - Random.Range(0f, spawnRadius);
+            
+            featurePosition += chunk.transform.position;
+            
+            // Ray cast the height
+            RaycastHit hit_obj;
+            Ray ray = new Ray(featurePosition, -Vector3.up);
+            
+            if (!Physics.Raycast(ray, out hit_obj, 1000f, LayerMask.GetMask("Ground"))) 
+                continue;
+            
+            featurePosition.y = Mathf.Round(hit_obj.point.y);
+            
+            // Random rotation
+            structureRotation = 0;
+            
+            //if (Random.Range(0, 1) == 1) 
+            structureRotation = 90;
+            
+            //int numberOfRotations = Random.Range(0, 4);
+            //for (int a=0; a < numberOfRotations; a++) 
+            //    structureRotation += 90;
+            
+            tickUpdate.placeStructureInWorld(featurePosition);
+        }
+        
+        
+        
+        
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
