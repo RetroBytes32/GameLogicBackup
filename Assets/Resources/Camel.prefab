@@ -650,7 +650,6 @@ MonoBehaviour:
   directionChangeCoolDown: 10
   observationCoolDown: 10
   love: 0
-  fear: 0
   stress: 0
   hunger: 0
   memories: 
@@ -743,8 +742,8 @@ MonoBehaviour:
   LimbRLC: {x: 0.3019608, y: 0.23921569, z: 0.1882353}
   LimbRRC: {x: 0.3019608, y: 0.23921569, z: 0.1882353}
   masculine: 0
-  ageSpan: 1000
-  ageWhenBorn: -800
+  ageSpan: 4000
+  ageWhenBorn: -1000
   ageWhenAdult: 0
   ageSizeInc: 1
   ageYouthScale: 0.7

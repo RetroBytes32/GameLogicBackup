@@ -46,12 +46,12 @@ public class Drop : MonoBehaviour {
                 return;
             
             // Check if the item is placeable
-            bool isPlacable = false;
+            bool isPlaceable = false;
             for (int i=0; i < tickUpdate.breakableItem.Length; i++) {
                 if (tickUpdate.breakableItem[i].name != slotName) 
                     continue;
                 
-                isPlacable = true;
+                isPlaceable = true;
                 break;
             }
             
@@ -59,7 +59,7 @@ public class Drop : MonoBehaviour {
             
             
             //
-            // Drop object onto an object
+            // Drop a voxel
             //
             
             RaycastHit hit_obj;
@@ -67,7 +67,7 @@ public class Drop : MonoBehaviour {
             
             if ( Physics.Raycast(ray, out hit_obj, HitDistance, DropMask) ) {
                 
-                if (!isPlacable) 
+                if (!isPlaceable) 
                     return;
                 
                 float chunk_x = Mathf.Round(hit_obj.point.x / 100) * 100;
@@ -77,7 +77,7 @@ public class Drop : MonoBehaviour {
                 if (chunkObject == null) 
                     return;
                 
-                ChunkTag chunkTag = chunkObject.transform.GetChild(0).transform.gameObject.GetComponent<ChunkTag>();
+                ChunkTag chunkTag = chunkObject.GetComponent<ChunkTag>();
                 
                 // Trigger a chunk update
                 if (chunkTag != null) {
@@ -96,23 +96,24 @@ public class Drop : MonoBehaviour {
                     newObject.name = slotName;
                     newObject.transform.parent = chunkObject.transform.GetChild(2).transform;
                     
-                    // Calculate the direction offset
+                    // Direction offset
                     float posX=0f;
                     float posY=0f;
                     float posZ=0f;
                     
-                    // Offset rotation
+                    // Rotation offset
                     float rotX=0f;
                     float rotY=0f;
                     float rotZ=0f;
                     
                     // Check hit box edges
-                    if (hit_obj.transform.gameObject.name == "front")   {posX -= hit_obj.transform.localScale.x; rotZ  = 90f;}
-                    if (hit_obj.transform.gameObject.name == "back")    {posX  = hit_obj.transform.localScale.x; rotZ  = 90f;}
-                    if (hit_obj.transform.gameObject.name == "top")     {posY  = hit_obj.transform.localScale.y; ;}
-                    if (hit_obj.transform.gameObject.name == "bottom")  {posY -= hit_obj.transform.localScale.y; ;}
-                    if (hit_obj.transform.gameObject.name == "left")    {posZ  = hit_obj.transform.localScale.z; rotX  = 90f;}
-                    if (hit_obj.transform.gameObject.name == "right")   {posZ -= hit_obj.transform.localScale.z; rotX  = 90f;}
+                    if (hit_obj.normal == Vector3.forward) {posZ  = hit_obj.transform.localScale.z; rotX  = 90f;}
+                    if (hit_obj.normal == Vector3.back)    {posZ -= hit_obj.transform.localScale.z; rotX  = 90f;}
+                    if (hit_obj.normal == Vector3.left)    {posX -= hit_obj.transform.localScale.x; rotZ  = 90f;}
+                    if (hit_obj.normal == Vector3.right)   {posX  = hit_obj.transform.localScale.x; rotZ  = 90f;}
+                    if (hit_obj.normal == Vector3.up)      {posY  = hit_obj.transform.localScale.y;}
+                    if (hit_obj.normal == Vector3.down)    {posY -= hit_obj.transform.localScale.y;}
+                    
                     
                     // Translate item
                     Vector3 newPosition = new Vector3(hit_obj.transform.position.x + posX,
@@ -137,6 +138,9 @@ public class Drop : MonoBehaviour {
                     GameObject newObject = Instantiate( Resources.Load( slotName )) as GameObject;
                     newObject.name = slotName;
                     newObject.transform.parent = chunkObject.transform.GetChild(2).transform;
+                    
+                    Vector3 randomRotation = new Vector3(Random.Range(0, 360), Random.Range(0, 360), Random.Range(0, 360));
+                    newObject.transform.localRotation = Quaternion.Euler(randomRotation);
                     
                     // Stack the objects up
                     newObject.transform.position = new Vector3(hit_obj.transform.position.x,
@@ -170,7 +174,7 @@ public class Drop : MonoBehaviour {
             
             
             //
-            // Check to drop directly on the ground
+            // Drop a voxel on the ground
             //
             
             RaycastHit hit_gnd;
@@ -182,7 +186,7 @@ public class Drop : MonoBehaviour {
                 /*
                 if (slotName == "") {
                     
-                    ChunkTag chunkTag = hit_gnd.transform.gameObject.GetComponent<ChunkTag>();
+                    ChunkTag chunkTag = hit_gnd.GetComponent<ChunkTag>();
                     if (chunkTag == null) return;
                     
                     float terrain_damage = 1f;
@@ -194,13 +198,9 @@ public class Drop : MonoBehaviour {
                 }
                 */
                 
-                // Dont place on ground if its not breakable
-                if (!isPlacable) 
+                // Dont place on ground if its not placeable
+                if (!isPlaceable) 
                     return;
-                
-                
-                //
-                // Drop item on ground
                 
                 float chunk_x = Mathf.Round(hit_gnd.point.x / 100) * 100;
                 float chunk_z = Mathf.Round(hit_gnd.point.z / 100) * 100;
@@ -209,7 +209,7 @@ public class Drop : MonoBehaviour {
                 if (chunkObject == null) 
                     return;
                 
-                ChunkTag chunkTag = chunkObject.transform.GetChild(0).transform.gameObject.GetComponent<ChunkTag>();
+                ChunkTag chunkTag = chunkObject.GetComponent<ChunkTag>();
                 
                 // Trigger a chunk update
                 if (chunkTag != null) {
@@ -217,12 +217,13 @@ public class Drop : MonoBehaviour {
                     tickUpdate.staticOptimizeCounter = 0;
                 }
                 
+                // Create voxel drop
                 GameObject newObject = Instantiate( Resources.Load( slotName )) as GameObject;
                 newObject.name = slotName;
+                
                 Vector3 roundedPosition;
                 roundedPosition.x = Mathf.Round(hit_gnd.point.x);
                 roundedPosition.z = Mathf.Round(hit_gnd.point.z);
-                
                 
                 newObject.transform.Translate( new Vector3(roundedPosition.x, 
                                                            hit_gnd.point.y + (newObject.transform.localScale.y / 2), 
@@ -253,7 +254,7 @@ public class Drop : MonoBehaviour {
         
         
         //
-        // Drop items
+        // Drop an item
         
         if (Input.GetButton("Drop")) {
             
@@ -298,8 +299,12 @@ public class Drop : MonoBehaviour {
                 roundedPosition.y = hit_gnd.point.y;
                 roundedPosition.z = Mathf.Round(hit_gnd.point.z);
                 
+                Vector3 randomRotation = new Vector3(0f, Random.Range(0, 360), 0f);
+                newObject.transform.localRotation = Quaternion.Euler(randomRotation);
+                
                 // Set item data
-                ItemTag itemTag = newObject.GetComponent<ItemTag>();
+                ItemTag itemTag  = newObject.GetComponent<ItemTag>();
+                itemTag.lifeTime = 100;
                 
                 // Save item durability
                 if (tickUpdate.inventory.Durability[tickUpdate.hudInterface.selectedSlot] != -1) 

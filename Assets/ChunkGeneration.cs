@@ -45,7 +45,12 @@ public class Biome {
 	[Space(5)]
 	
 	public float  region_x;
+	public float  region_y;
 	public float  region_z;
+	public float  region_threshold;
+	
+	[Space(20)]
+	
 	public float  region_mul_x;
 	public float  region_mul_y;
     public float  region_mul_z;
@@ -53,6 +58,13 @@ public class Biome {
     public float  region_edgemelt_z;
     
     
+	[Space(10)]
+	[Header("Biome temperature")]
+	[Space(5)]
+	
+	public float  region_temperature;
+	
+	
 	[Space(10)]
 	[Header("Terrain color")]
 	[Space(5)]
@@ -227,11 +239,22 @@ public class PerlinOctive {
 public class StructureBuild {
     public string structureName;
     
-    public int    structureHeight;
+    public int  structureWidth;
+    public int  structureHeight;
     
     public List<StructureItem>    items;
     public List<StructureEntity>  entities;
 }
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -273,11 +296,22 @@ public class ChunkGeneration : MonoBehaviour {
     
 	public PerlinOctive[]  octives;
     
+    [Space(10)]
+	[Header("World temperature")]
+	[Space(5)]
+    
+    public float noise_temperature_x;
+    public float noise_temperature_z;
+    public float noise_temperature_mul;
+    public float noise_temperature_threshold;
+    
     
 	[Space(10)]
 	[Header("Water table")]
 	[Space(5)]
     
+	public float waterTableHeight;
+	
 	public Color WaterColor;
 	public Color MudColor;
 	public float MudColorMult;
@@ -302,19 +336,16 @@ public class ChunkGeneration : MonoBehaviour {
 	[Header("Village generation")]
 	[Space(5)]
     
-    public float villageNoiseX             = 0f;
-    public float villageNoiseZ             = 0f;
+    public float villageNoiseX             = 0.004f;
+    public float villageNoiseZ             = 0.004f;
+    public float villageNoiseHeight        = 0f;
     
     public float villageHeightMin          = 0f;
-    public float villageHeightMax          = 30f;
+    public float villageHeightMax          = 15f;
     
-    public int villageChanceToGenerate     = 8;
-    public int villageNumberOfBuilds       = 18;
-    public int villagePlotRadiusMin        = 2;
+    public int villageNumberOfBuilds       = 30;
+    public int villagePlotRadiusMin        = 1;
     public int villagePlotRadiusMax        = 8;
-    public int villageSpaceBetweenBuilds   = 10;
-    public int villageFlattenRadius        = 8;
-    
     
     
     
@@ -330,6 +361,7 @@ public class ChunkGeneration : MonoBehaviour {
     
     public string structureName;
     
+    public int structureWidth;
     public int structureHeight;
     
     public List<StructureItem>    items;
@@ -383,7 +415,7 @@ public class ChunkGeneration : MonoBehaviour {
         currentChunk.name = chunk_x + "_" + chunk_z;
         currentChunk.transform.parent = ChunkList.transform;
         
-        ChunkTag chunkTag = currentChunk.transform.GetChild(0).gameObject.GetComponent<ChunkTag>();
+        ChunkTag chunkTag = currentChunk.GetComponent<ChunkTag>();
         
         // Setup container objects
         GameObject newEntityContainer = new GameObject();
@@ -399,12 +431,11 @@ public class ChunkGeneration : MonoBehaviour {
         currentChunkSeed = worldSeed + ( (int)chunk_x + (int)chunk_z );
         Random.InitState( currentChunkSeed );
         
-        
         // Get terrain mesh
         GameObject chunkMeshObject = currentChunk.transform.GetChild(0).gameObject;
         Mesh chunkMesh = currentChunk.transform.GetChild(0).gameObject.GetComponent<MeshFilter>().mesh;
         
-        //Renderer chunkRenderer = chunkMeshObject.GetComponent<Renderer>();
+        //MeshRenderer chunkMeshRenderer = chunkMeshObject.GetComponent<MeshRenderer>();
         //MeshCollider chunkMeshCollider = chunkMeshObject.GetComponent<MeshCollider>();
         
         
@@ -415,12 +446,20 @@ public class ChunkGeneration : MonoBehaviour {
         //
         // Generate water table
         
+        // Flat world water level
+        float worldWaterTableHeight = waterTableHeight;
+        if (generateFlatWorld) 
+            worldWaterTableHeight = -20.0f;
+        
+        
         GameObject waterTableObject = Instantiate( Resources.Load( "WaterTable" )) as GameObject;
         waterTableObject.transform.name = "water";
         waterTableObject.transform.parent = currentChunk.transform;
-        waterTableObject.transform.position = new Vector3(currentChunk.transform.position.x, -0.7f, currentChunk.transform.position.z);
+        waterTableObject.transform.position = new Vector3(currentChunk.transform.position.x, worldWaterTableHeight - 0.7f, currentChunk.transform.position.z);
         
-        waterTableObject.GetComponent<MeshRenderer>().material = transform.GetChild(0).gameObject.GetComponent<MeshRenderer>().material;
+        waterTableObject.GetComponent<MeshRenderer>().material = transform.GetChild(0).GetComponent<MeshRenderer>().material;
+        
+        
         
         
         // Generation values
@@ -457,8 +496,8 @@ public class ChunkGeneration : MonoBehaviour {
             //chunkMeshCollider.sharedMesh = chunkMesh;
             
             // Scale and position
-            currentChunk.transform.GetChild(0).localScale = new Vector3((100 * 0.01f), 1.0f, (100 * 0.01f));
-            currentChunk.transform.Translate(new Vector3(chunk_x, 0.0f, chunk_z));
+            currentChunk.transform.GetChild(0).localScale = new Vector3((1f), 1f, (1f));
+            currentChunk.transform.Translate(new Vector3(chunk_x, 0f, chunk_z));
             
             return currentChunk;
         }
@@ -466,16 +505,10 @@ public class ChunkGeneration : MonoBehaviour {
         
         
         //
-        // Check generate a new village in the last chunk
-        //
+        // Generate a village in the last chunk
         
-        if ((addWorldDecorations) & (Random.Range(0, villageChanceToGenerate) == 0)) {
-            
-            if (oldChunk != null) 
-                generateVillage(oldChunk, chunk_x * villageNoiseX, chunk_z * villageNoiseZ);
-            
-        }
-        
+        if (oldChunk != null) 
+            generateVillage(oldChunk, chunk_x * villageNoiseX, chunk_z * villageNoiseZ);
         
         
         //
@@ -506,7 +539,7 @@ public class ChunkGeneration : MonoBehaviour {
                 
                 
                 if (noise_total > noise_height)
-                noise_total = noise_height;
+                    noise_total = noise_height;
                 
                 
                 //
@@ -539,8 +572,19 @@ public class ChunkGeneration : MonoBehaviour {
                 
                 //int  underBiomeIndex = 0;
                 int  biomeIndex = 0;
+                float sampleTemp = 0;
                 
                 if (biomes.Length > 0) {
+                    
+                    //
+                    // Biome temperature
+                    //
+                    
+                    float xCoordTemp = (((float)x * noise_temperature_x) + (chunk_x * noise_temperature_x) * 2) - 1;
+                    float zCoordTemp = (((float)z * noise_temperature_z) + (chunk_z * noise_temperature_z) * 2) - 1;
+                    
+                    sampleTemp = Mathf.PerlinNoise(xCoordTemp, zCoordTemp) * noise_temperature_mul;
+                    
                     
                     //
                     // Biome region assignment
@@ -563,11 +607,30 @@ public class ChunkGeneration : MonoBehaviour {
                         sampleA += ((Mathf.PerlinNoise(xCoordA * biomes[a].region_edgemelt_x,        zCoordA * biomes[a].region_edgemelt_z)         * 2) - 1) * 0.01f;
                         sampleA += ((Mathf.PerlinNoise(xCoordA * biomes[a].region_edgemelt_x * 0.1f, zCoordA * biomes[a].region_edgemelt_z  * 0.1f) * 2) - 1) * 0.01f;
                         
+                        /*
+                        
+                        // Check biome climate temperature
+                        if (sampleTemp > noise_temperature_threshold) {
+                            
+                            // Warm climate
+                            if (sampleTemp < biomes[a].region_temperature) 
+                                continue;
+                            
+                        } else {
+                            
+                            // Cold climate
+                            if (sampleTemp > biomes[a].region_temperature) 
+                                continue;
+                            
+                        }
+                        
+                        */
+                        
                         if (biomes[a].priority < biomePriority) 
                             continue;
                         
                         // Biome threshold
-                        if (sampleA < 0f) 
+                        if (sampleA < biomes[a].region_threshold) 
                             continue;
                         
                         biomePriority = biomes[a].priority;
@@ -609,18 +672,18 @@ public class ChunkGeneration : MonoBehaviour {
                     if (biomes[biomeIndex].octives.Length > 0) {
                         
                         for (int a=0; a < biomes[biomeIndex].octives.Length; a++) {
-                        
-                        float noise_mod_x = noise_x * biomes[biomeIndex].octives[a].frequency;
-                        float noise_mod_z = noise_z * biomes[biomeIndex].octives[a].frequency;
-                        
-                        xCoord = ((float)x * noise_mod_x) + (chunk_x * noise_mod_x) + x_offset;
-                        zCoord = ((float)z * noise_mod_z) + (chunk_z * noise_mod_z) + z_offset;
-                        
-                        perlinSample = Mathf.PerlinNoise(xCoord, zCoord);
-                        float biome_sub = ((perlinSample * 2) - 1) * biomes[biomeIndex].octives[a].amplitude;
-                        
-                        noise_sub_total += biome_sub;
-                        
+                            
+                            float noise_mod_x = noise_x * biomes[biomeIndex].octives[a].frequency;
+                            float noise_mod_z = noise_z * biomes[biomeIndex].octives[a].frequency;
+                            
+                            xCoord = ((float)x * noise_mod_x) + (chunk_x * noise_mod_x) + x_offset;
+                            zCoord = ((float)z * noise_mod_z) + (chunk_z * noise_mod_z) + z_offset;
+                            
+                            perlinSample = Mathf.PerlinNoise(xCoord, zCoord);
+                            float biome_sub = ((perlinSample * 2) - 1) * biomes[biomeIndex].octives[a].amplitude;
+                            
+                            noise_sub_total += biome_sub;
+                            
                         }
                         
                     }
@@ -664,7 +727,7 @@ public class ChunkGeneration : MonoBehaviour {
                     // Far lands, perhaps??
                     //
                     
-                    noise_total += noise_sub_total * biomeNoiseSample;
+                    noise_total += (noise_sub_total * biomeNoiseSample) + biomes[biomeIndex].region_y;
                     
                     if ((chunk_x > 999999) | (chunk_x < -999999) | 
                         (chunk_z > 999999) | (chunk_z < -999999)) {
@@ -702,21 +765,23 @@ public class ChunkGeneration : MonoBehaviour {
                 // Water table
                 //
                 if (!generateFlatWorld) {
-                    if (noise_total < 0f)
+                    if (noise_total < worldWaterTableHeight)
                         color_total = Color.Lerp(MudColor, biomes[biomeIndex].base_color, 0.8f);
-                    if (noise_total < -0.2f)
+                    if (noise_total < worldWaterTableHeight - 0.2f)
                         color_total = Color.Lerp(MudColor, biomes[biomeIndex].base_color, 0.6f);
-                    if (noise_total < -0.5f)
+                    if (noise_total < worldWaterTableHeight - 0.5f)
                         color_total = Color.Lerp(MudColor, biomes[biomeIndex].base_color, 0.4f);
-                    if (noise_total < -0.7f)
+                    if (noise_total < worldWaterTableHeight - 0.7f)
                         color_total = Color.Lerp(MudColor, biomes[biomeIndex].base_color, 0.2f);
-                    if (noise_total < -1f)
+                    if (noise_total < worldWaterTableHeight - 1f)
                         color_total = Color.Lerp(MudColor, biomes[biomeIndex].base_color, 0.1f);
                 }
                 
+                // Water depth multiplier
                 if (noise_total < 0f)
                     noise_total *= waterDepthMult;
                 
+                // Water minimum height
                 if (noise_total < waterDepthMin)
                     noise_total = waterDepthMin;
                 
@@ -726,7 +791,7 @@ public class ChunkGeneration : MonoBehaviour {
                 // Height stepping
                 //
                 
-                noise_total = Mathf.Round(noise_total);
+                //noise_total = Mathf.Round(noise_total);
                 
                 
                 
@@ -738,6 +803,7 @@ public class ChunkGeneration : MonoBehaviour {
                 // Check flat world generation
                 if (generateFlatWorld) 
                     noise_total = 0f;
+                
                 
                 float MountainCapHeight = biomes[biomeIndex].Mountain_cap;
                 
@@ -774,12 +840,16 @@ public class ChunkGeneration : MonoBehaviour {
                 //
                 // Add random color variation
                 
-                float variation = 0.02f;
+                float variation = 0.013f;
                 float colorVar = Random.Range(0f, variation) - Random.Range(0f, variation);
                 color_total.r += colorVar;
                 color_total.g += colorVar;
                 color_total.b += colorVar;
                 
+                //
+                // Show biome region temperature
+                //if (sampleTemp > noise_temperature_threshold) {color_total.r = 1f; color_total.g = 0f; color_total.b = 0f;}
+                //if (sampleTemp < noise_temperature_threshold) {color_total.r = 0f; color_total.g = 0f; color_total.b = 1f;}
                 
                 
                 //
@@ -976,59 +1046,66 @@ public class ChunkGeneration : MonoBehaviour {
     
     public void generateVillage(GameObject chunk, float xCoordVillage, float zCoordVillage) {
         
-        ChunkTag chunkTag = chunk.transform.GetChild(0).GetComponent<ChunkTag>();
+        ChunkTag chunkTag = chunk.GetComponent<ChunkTag>();
         chunkTag.shouldUpdateVoxels = true;
         
-        int villageLayout = 0;
-        //if (Random.Range(0, 100) > 1) 
-            villageLayout = 1;
-        
-        if (Mathf.PerlinNoise(xCoordVillage, zCoordVillage) < 0.3f) 
+        // Spawn villages according to a perlin noise sample
+        if (Mathf.PerlinNoise(xCoordVillage, zCoordVillage) < villageNoiseHeight) 
             return;
         
+        // Are there any structures available to spawn
         if ((worldStructures.Count == 0) | (biomes[chunkTag.biome].villageStructures.Length == 0)) 
             return;
+        int totalEntityCount=0;
         
-        int entityCount=0;
-        
-        List<Vector3> buildList = new List<Vector3>();
+        List<Vector3> buildList    = new List<Vector3>();
+        List<float>   distanceList = new List<float>();
         
         int newPlotRadius = Random.Range(villagePlotRadiusMin, villagePlotRadiusMax);
         
         for (int c=0; c < villageNumberOfBuilds; c++) {
-            int buildX=0;
-            int buildZ=0;
             
-            // Grid layout
-            if (villageLayout == 0) {
-                newPlotRadius = villagePlotRadiusMax;
-                buildX = (Random.Range(newPlotRadius/2, newPlotRadius) * villageSpaceBetweenBuilds) - (Random.Range(newPlotRadius/2, newPlotRadius) * villageSpaceBetweenBuilds);
-                buildZ = (Random.Range(newPlotRadius/2, newPlotRadius) * villageSpaceBetweenBuilds) - (Random.Range(newPlotRadius/2, newPlotRadius) * villageSpaceBetweenBuilds);
-            } else {
-            // Random layout
-                buildX = Random.Range(0, newPlotRadius * villageSpaceBetweenBuilds) - Random.Range(0, newPlotRadius * villageSpaceBetweenBuilds);
-                buildZ = Random.Range(0, newPlotRadius * villageSpaceBetweenBuilds) - Random.Range(0, newPlotRadius * villageSpaceBetweenBuilds);
+            int structureRandom = Random.Range(0, biomes[chunkTag.biome].villageStructures.Length);
+            string randomStructure = biomes[chunkTag.biome].villageStructures[ structureRandom ];
+            
+            // Get build generation details
+            for (int i=0; i < worldStructures.Count; i++) {
+                
+                if (worldStructures[i].structureName != randomStructure) 
+                    continue;
+                
+                structureWidth  = worldStructures[i].structureWidth;
+                structureHeight = worldStructures[i].structureHeight;
+                
+                break;
             }
             
-            // Check spawn within chunk bounds only
-            int villageSpaceMax = 50 + villageFlattenRadius;
-            int villageSpaceMin = 50 - villageFlattenRadius;
+            // Build spacing
+            int structureMaxArea = (int)Mathf.Max(structureWidth, structureHeight);
+            int structureSpacing = structureMaxArea * (Random.Range(1, 4) * 5);
             
-            if (buildX+villageSpaceMax > 100) {continue;}
-            if (buildZ+villageSpaceMax > 100) {continue;}
-            if (buildX+villageSpaceMin < 0) {continue;}
-            if (buildZ+villageSpaceMin < 0) {continue;}
+            int villageSpaceMax = 50 + structureMaxArea + 1;
+            int villageSpaceMin = 50 - structureMaxArea - 1;
+            
+            // Pick a random location
+            int buildX = Random.Range(0, newPlotRadius * structureSpacing) - Random.Range(0, newPlotRadius * structureSpacing);
+            int buildZ = Random.Range(0, newPlotRadius * structureSpacing) - Random.Range(0, newPlotRadius * structureSpacing);
+            
+            // Check spawn within chunk bounds only
+            if (buildX+villageSpaceMax > 100) continue;
+            if (buildZ+villageSpaceMax > 100) continue;
+            if (buildX+villageSpaceMin < 0) continue;
+            if (buildZ+villageSpaceMin < 0) continue;
             
             float targetHeight = chunkTag.vertex_grid[50 + buildX, 50 + buildZ];
             
             // No structures under water
-            if (targetHeight < 1) {continue;}
+            if (targetHeight < 1) 
+                continue;
             
             // Village height preference
             if ((targetHeight < villageHeightMin) | (targetHeight > villageHeightMax)) 
                 continue;
-            
-            string randomStructure = biomes[chunkTag.biome].villageStructures[ Random.Range(0, biomes[chunkTag.biome].villageStructures.Length) ];
             
             Vector3 featurePosition;
             featurePosition.x = buildX;
@@ -1037,25 +1114,20 @@ public class ChunkGeneration : MonoBehaviour {
             
             featurePosition += chunk.transform.position;
             
+            // Check structure overlap
             bool canBuildHere = true;
             for (int a=0; a < buildList.Count; a++) {
-                
-                // Grid layout
-                if (villageLayout == 0) {
-                    if ((buildList[a].x == featurePosition.x) & (buildList[a].z == featurePosition.z)) {
-                        canBuildHere = false;
-                        break;
-                    }
-                } else {
-                // Random layout
-                    if (Vector3.Distance(buildList[a], featurePosition) < villageSpaceBetweenBuilds) {
-                        canBuildHere = false;
-                        break;
-                    }
+                if (Vector3.Distance(buildList[a], featurePosition) < distanceList[a]) {
+                    canBuildHere = false;
+                    break;
                 }
             }
             
-            if (!canBuildHere) {continue;}
+            if (!canBuildHere) 
+                continue;
+            
+            if (!tickUpdate.placeStructureInWorld(randomStructure, featurePosition))
+                continue;
             
             // Chance to spawn inhabitants
             if (biomes[chunkTag.biome].entityVariants.Length > 0) {
@@ -1073,21 +1145,19 @@ public class ChunkGeneration : MonoBehaviour {
                     entityPosition.x += Random.Range(-2, 2);
                     entityPosition.z += Random.Range(-2, 2);
                     
-                    if (entityCount > biomes[chunkTag.biome].entityVariants[entityVariant].villageNumberOfInhabitants) 
+                    if (totalEntityCount > biomes[chunkTag.biome].entityVariants[entityVariant].villageNumberOfInhabitants) 
                         break;
                     
                     // Spawn on random side of build
-                    if (Random.Range(0, 10) > 4) {
-                        entityPosition.x += villageSpaceBetweenBuilds / 2;
-                    } else {
-                        entityPosition.x -= villageSpaceBetweenBuilds / 2;
-                    }
+                    if (Random.Range(0, 10) > 4) 
+                    {entityPosition.x += structureSpacing / 2;}
+                        else 
+                    {entityPosition.x -= structureSpacing / 2;}
                     
-                    if (Random.Range(0, 10) > 4) {
-                        entityPosition.z += villageSpaceBetweenBuilds / 2;
-                    } else {
-                        entityPosition.z -= villageSpaceBetweenBuilds / 2;
-                    }
+                    if (Random.Range(0, 10) > 4) 
+                    {entityPosition.z += structureSpacing / 2;}
+                        else
+                    {entityPosition.z -= structureSpacing / 2;}
                     
                     string entityType = "";
                     entityType = biomes[chunkTag.biome].entityVariants[entityVariant].entityName;
@@ -1133,7 +1203,7 @@ public class ChunkGeneration : MonoBehaviour {
                     
                     geneticTag.updateGenetics();
                     
-                    entityCount++;
+                    totalEntityCount++;
                 }
             }
             
@@ -1143,27 +1213,23 @@ public class ChunkGeneration : MonoBehaviour {
             if (buildX+villageSpaceMin == 0) buildX++;
             if (buildZ+villageSpaceMin == 0) buildZ++;
             
+            ChunkTag newChunkTag = chunk.GetComponent<ChunkTag>();
+            
             // Smooth terrain under the build
-            for (int z=buildZ+villageSpaceMin; z < buildZ+villageSpaceMax; z++) {
-                for (int x=buildX+villageSpaceMin; x < buildX+villageSpaceMax; x++) {
-                    
-                    chunk.transform.GetChild(0).GetComponent<ChunkTag>().vertex_grid[x, z] = targetHeight;
-                }
-            }
-            chunk.transform.GetChild(0).GetComponent<ChunkTag>().update_mesh();
+            for (int z=buildZ+villageSpaceMin; z < buildZ+villageSpaceMax; z++) 
+                for (int x=buildX+villageSpaceMin; x < buildX+villageSpaceMax; x++) 
+                    newChunkTag.vertex_grid[x, z] = targetHeight;
+            
+            newChunkTag.update_mesh();
             
             // Random rotation
             structureRotation = 0;
             for (int a=0; a < Random.Range(0, 4); a++) 
                 structureRotation += 90;
             
-            tickUpdate.placeStructureInWorld(randomStructure, featurePosition);
-            
-            //string debugString = featurePosition.x.ToString() + "   " + featurePosition.z.ToString() + "   " + randomStructure;
-            //Debug.Log( debugString );
-            
             featurePosition.y = 0;
             buildList.Add( featurePosition );
+            distanceList.Add( structureSpacing );
         }
         
         return;
@@ -1191,6 +1257,9 @@ public class ChunkGeneration : MonoBehaviour {
         if (Random.Range(0, 10000) > (biomes[biomeIndex].staticList[static_type].density))
             return false;
         
+        if (Mathf.PerlinNoise(x * 0.1f, z * 0.1f) < 0.45f) 
+            return false;
+        
         GameObject staticObject;
         staticObject = Instantiate( Resources.Load( biomes[biomeIndex].staticList[static_type].name )) as GameObject;
         staticObject.name = biomes[biomeIndex].staticList[static_type].name;
@@ -1216,6 +1285,9 @@ public class ChunkGeneration : MonoBehaviour {
             return false;
         
         if (Random.Range(0, 10000) > (biomes[biomeIndex].treeSpawn[tree_type].density))
+            return false;
+        
+        if (Mathf.PerlinNoise(x * 0.1f, z * 0.1f) < 0.3f) 
             return false;
         
         float minStackingHeight = biomes[biomeIndex].treeSpawn[tree_type].stackHeightMin;

@@ -9,12 +9,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4428582026221550}
+  - component: {fileID: 8024991710254324932}
   m_Layer: 13
   m_Name: chunk
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 126
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!4 &4428582026221550
 Transform:
@@ -31,6 +32,21 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8024991710254324932
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1621356179384360}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f877c0d0f99d6c4caf8f2cae51e7cdb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isLoaded: 0
+  shouldUpdateVoxels: 0
+  biome: 0
 --- !u!1 &1975697753397416
 GameObject:
   m_ObjectHideFlags: 0
@@ -40,16 +56,15 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4466251917124336}
-  - component: {fileID: 114825980367612278}
+  - component: {fileID: 2425733227737233344}
   - component: {fileID: 23464652621672600}
   - component: {fileID: 64479954330987152}
-  - component: {fileID: 2425733227737233344}
   m_Layer: 13
   m_Name: plane
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 126
+  m_StaticEditorFlags: 4294967295
   m_IsActive: 1
 --- !u!4 &4466251917124336
 Transform:
@@ -65,20 +80,14 @@ Transform:
   m_Father: {fileID: 4428582026221550}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &114825980367612278
-MonoBehaviour:
+--- !u!33 &2425733227737233344
+MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1975697753397416}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3f877c0d0f99d6c4caf8f2cae51e7cdb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  isLoaded: 0
-  biome: 0
+  m_Mesh: {fileID: 0}
 --- !u!23 &23464652621672600
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -129,12 +138,4 @@ MeshCollider:
   serializedVersion: 3
   m_Convex: 0
   m_CookingOptions: 0
-  m_Mesh: {fileID: 0}
---- !u!33 &2425733227737233344
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1975697753397416}
   m_Mesh: {fileID: 0}

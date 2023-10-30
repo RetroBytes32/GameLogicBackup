@@ -134,7 +134,7 @@ public class ChunkSerializer {
         GameObject statics    = chunk.gameObject.transform.GetChild(2).gameObject;
         saveChunk = new ChunkData(statics.gameObject.transform.childCount, entities.gameObject.transform.childCount);
         
-        ChunkTag chunkTag = chunk.gameObject.transform.GetChild(0).GetComponent<ChunkTag>();
+        ChunkTag chunkTag = chunk.GetComponent<ChunkTag>();
         saveChunk.biome = chunkTag.biome;
         
         
@@ -209,7 +209,6 @@ public class ChunkSerializer {
             
             // Emotional state
             saveChunk.love[i]                    = actorTag.love;
-            saveChunk.fear[i]                    = actorTag.fear;
             saveChunk.stress[i]                  = actorTag.stress;
             saveChunk.hunger[i]                  = actorTag.hunger;
             
@@ -334,7 +333,7 @@ public class ChunkSerializer {
             return;
         
         // Setup chunk biome type
-        ChunkTag chunkTag = loading_chunk.transform.GetChild(0).GetComponent<ChunkTag>();
+        ChunkTag chunkTag = loading_chunk.GetComponent<ChunkTag>();
         chunkTag.biome = loadChunk.biome;
         chunkTag.isLoaded = true;
         
@@ -359,21 +358,10 @@ public class ChunkSerializer {
         if (loading_chunk == null) 
             return;
         
-        ChunkTag chunkTag = loading_chunk.transform.GetChild(0).GetComponent<ChunkTag>();
+        ChunkTag chunkTag = loading_chunk.GetComponent<ChunkTag>();
         chunkTag.isLoaded = true;
         
         GameObject newEntitiesList = loading_chunk.transform.GetChild(1).transform.gameObject;
-        
-        
-        // Get tree log base material
-        //Renderer logMeshRenderer = gameRules.transform.GetChild(chunkTag.biome).transform.GetChild(0).transform.GetChild(0).gameObject.GetComponent<Renderer>();
-        //Material mat_log  = logMeshRenderer.material;
-        
-        
-        // Get tree leaf base material
-        //Renderer leafMeshRenderer = gameRules.transform.GetChild(chunkTag.biome).transform.GetChild(0).transform.GetChild(1).gameObject.GetComponent<Renderer>();
-        //Material mat_leaf = leafMeshRenderer.material;
-        
         
         
         // Load static objects
@@ -454,7 +442,6 @@ public class ChunkSerializer {
             
             // Emotional state
             actorTag.love                    = loadChunk.love[i];
-            actorTag.fear                    = loadChunk.fear[i];
             actorTag.stress                  = loadChunk.stress[i];
             actorTag.hunger                  = loadChunk.hunger[i];
             
@@ -565,6 +552,7 @@ public class ChunkSerializer {
         worldData.addWorldDecorations = tickUpdate.chunkGenerator.addWorldDecorations;
         worldData.addWorldEntities    = tickUpdate.chunkGenerator.addWorldEntities;
         worldData.generateFlatWorld   = tickUpdate.chunkGenerator.generateFlatWorld;
+        worldData.waterTableHeight    = tickUpdate.chunkGenerator.waterTableHeight;
         
         worldData.TickCounter     = tickUpdate.TickCounter;
         worldData.TickRate        = tickUpdate.TickRate;
@@ -629,11 +617,11 @@ public class ChunkSerializer {
         
         // Set static references
         TickUpdate tickUpdate   = GameObject.Find("GameRules").GetComponent<TickUpdate>();
-        GameObject playerObject      = GameObject.Find("Player");
-        GameObject mainCamera        = GameObject.Find("Main Camera");
-        MouseLook mouseLook          = mainCamera.GetComponent<MouseLook>();
+        GameObject playerObject = GameObject.Find("Player");
+        GameObject mainCamera   = GameObject.Find("Main Camera");
+        MouseLook mouseLook     = mainCamera.GetComponent<MouseLook>();
         
-        
+        //
         // Load the world data
         tickUpdate.worldSeed             = worldData.seed;
         tickUpdate.dayNightCycleCurrent  = worldData.sunAngle;
@@ -645,6 +633,7 @@ public class ChunkSerializer {
         tickUpdate.chunkGenerator.addWorldDecorations   = worldData.addWorldDecorations;
         tickUpdate.chunkGenerator.addWorldEntities      = worldData.addWorldEntities;
         tickUpdate.chunkGenerator.generateFlatWorld     = worldData.generateFlatWorld;
+        tickUpdate.chunkGenerator.waterTableHeight      = worldData.waterTableHeight;
         
         tickUpdate.TickCounter           = worldData.TickCounter;
         tickUpdate.TickRate              = worldData.TickRate;

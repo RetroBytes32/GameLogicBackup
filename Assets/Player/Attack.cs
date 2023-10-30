@@ -135,7 +135,7 @@ public class Attack : MonoBehaviour {
                 string objectName          = hit_obj.transform.parent.transform.gameObject.name;
                 GameObject newTargetObject = hit_obj.transform.parent.transform.gameObject;
                 GameObject targetChunk     = hit_obj.transform.parent.transform.parent.transform.parent.transform.parent.transform.gameObject;
-                ChunkTag chunkTag          = targetChunk.transform.GetChild(0).gameObject.GetComponent<ChunkTag>();
+                ChunkTag chunkTag          = targetChunk.GetComponent<ChunkTag>();
                 
                 // If we start selecting another object
                 if (newTargetObject != targetObject) {
@@ -210,8 +210,11 @@ public class Attack : MonoBehaviour {
                     
                     // Pick up the item
                     Destroy( newTargetObject );
-                    tickUpdate.inventory.addItem(objectName, 1, maxStack, -1);
-                    tickUpdate.hudInterface.updateInHand();
+                    
+                    if (!tickUpdate.doDebugMode) {
+                        tickUpdate.inventory.addItem(objectName, 1, maxStack, -1);
+                        tickUpdate.hudInterface.updateInHand();
+                    }
                     
                     // Trigger a chunk update
                     if (chunkTag != null) {
@@ -312,6 +315,7 @@ public class Attack : MonoBehaviour {
                     
                     // Pick up the item
                     Destroy( newTargetObject );
+                    
                     tickUpdate.inventory.addItem(objectName, 1, maxStack, durability);
                     tickUpdate.hudInterface.updateInHand();
                     
@@ -366,7 +370,6 @@ public class Attack : MonoBehaviour {
                     actorTag.isInPain = true;
                     actorTag.targetEntity = gameObject;
                     
-                    actorTag.fear   = 40;
                     actorTag.stress = 100;
                     
                     if (actorTag.chanceToAttackPlayer > 0f) 

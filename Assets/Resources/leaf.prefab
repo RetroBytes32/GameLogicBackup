@@ -56,13 +56,12 @@ GameObject:
   - component: {fileID: 4940248932881088944}
   - component: {fileID: 4899078412130277712}
   - component: {fileID: 4899078412131244944}
-  - component: {fileID: 6002461191023162776}
   m_Layer: 15
   m_Name: leaf
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 4294967295
   m_IsActive: 1
 --- !u!4 &4899078412133144944
 Transform:
@@ -138,22 +137,3 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!205 &6002461191023162776
-LODGroup:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4899078412133238096}
-  serializedVersion: 2
-  m_LocalReferencePoint: {x: -1.75, y: 0.21743, z: -0.000053286552}
-  m_Size: 3.5
-  m_FadeMode: 0
-  m_AnimateCrossFading: 0
-  m_LastLODIsBillboard: 0
-  m_LODs:
-  - screenRelativeHeight: 0.009939453
-    fadeTransitionWidth: 0
-    renderers:
-    - renderer: {fileID: 4899078412131244944}
-  m_Enabled: 1

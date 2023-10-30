@@ -385,11 +385,11 @@ MonoBehaviour:
   Age: 0
   Speed: 2
   Position: {x: 0, y: 0, z: 0}
-  Rotation: {x: 0, y: -186.83487, z: 0}
+  Rotation: {x: 0, y: 0, z: 0}
   Facing: {x: 0, y: 0, z: 0}
-  RotateTo: {x: 0, y: -186.83487, z: 0}
+  RotateTo: {x: 0, y: 0, z: 0}
   LookAt: {x: 0, y: 0, z: 0}
-  Focus: {x: -27.295145, y: 0.08000004, z: -0.90248734}
+  Focus: {x: 0, y: 0, z: 0}
   Velocity: {x: 0, y: 0, z: 0}
   HeadSnapSpeed: 5
   BodySnapSpeed: 10
@@ -449,7 +449,6 @@ MonoBehaviour:
   directionChangeCoolDown: 10
   observationCoolDown: 10
   love: 0
-  fear: 0
   stress: 0
   hunger: 0
   memories: 
@@ -541,8 +540,8 @@ MonoBehaviour:
   LimbRLC: {x: 0.5, y: 0.5, z: 0.5}
   LimbRRC: {x: 0.5, y: 0.5, z: 0.5}
   masculine: 0
-  ageSpan: 3000
-  ageWhenBorn: -700
+  ageSpan: 20000
+  ageWhenBorn: -1000
   ageWhenAdult: 0
   ageSizeInc: 1
   ageYouthScale: 0.5

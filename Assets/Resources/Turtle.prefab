@@ -203,7 +203,6 @@ MonoBehaviour:
   directionChangeCoolDown: 10
   observationCoolDown: 10
   love: 0
-  fear: 0
   stress: 0
   hunger: 0
   memories: 
@@ -229,7 +228,7 @@ MonoBehaviour:
   LegLeft: {fileID: 7028465597714512392}
   LegRight: {fileID: 6170585285379697854}
   avoidanceDistance: 4
-  avoidanceHeight: 0.3
+  avoidanceHeight: 0.1
   avoidanceDirection: 0
   groundLayerMask:
     serializedVersion: 2
@@ -295,8 +294,8 @@ MonoBehaviour:
   LimbRLC: {x: 0.17, y: 0.16, z: 0.11}
   LimbRRC: {x: 0.17, y: 0.16, z: 0.11}
   masculine: 0
-  ageSpan: 1000
-  ageWhenBorn: -800
+  ageSpan: 10000
+  ageWhenBorn: -3000
   ageWhenAdult: 0
   ageSizeInc: 1
   ageYouthScale: 0.5

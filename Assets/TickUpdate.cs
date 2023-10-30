@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -181,6 +181,16 @@ public class TickUpdate : MonoBehaviour {
     public WeaponItem[] weaponItem;
     
     
+    [Space(10)]
+	[Header("Crafting recipes")]
+	[Space(5)]
+    
+    public CraftableItem[] recipes;
+    
+    
+    
+    
+    
     
     [Space(40)]
 	[Header("Chunk processing")]
@@ -222,7 +232,12 @@ public class TickUpdate : MonoBehaviour {
 	public int entityCounter=0;
     
     
-	public float currentLoadingX;
+	
+	[Space(40)]
+	[Header("Current chunk")]
+	[Space(5)]
+    
+    public float currentLoadingX;
 	public float currentLoadingZ;
     public int   currentChunkRing=2;
     
@@ -247,6 +262,8 @@ public class TickUpdate : MonoBehaviour {
     public float                CommandConsoleFade;
     
     public GameObject           HUD;
+	public GameObject           CraftingGrid;
+	
 	public PauseMenuController  pauseMenu;
     
     public ChunkGeneration chunkGenerator;
@@ -275,7 +292,7 @@ public class TickUpdate : MonoBehaviour {
 	int          loadTimeOut=0;
     int          loadCounter=0;
     
-    
+    float craftingGridFade = 0f;
     
     
     
@@ -313,7 +330,7 @@ public class TickUpdate : MonoBehaviour {
         
         // Correct the fog color for under water effect
         if (isCameraUnderWater) {
-            RenderSettings.fogStartDistance = -100;
+            RenderSettings.fogStartDistance = -30;
             RenderSettings.fogEndDistance   =  50;
             RenderSettings.fogColor = chunkGenerator.WaterColor;
         }
@@ -331,11 +348,20 @@ public class TickUpdate : MonoBehaviour {
             
         }
         
-        if (cameraObject.transform.position.y < -0.3f) {
-            if (!reset_player) 
-                isCameraUnderWater = true;
+        if (!chunkGenerator.generateFlatWorld) {
+            if (cameraObject.transform.position.y < chunkGenerator.waterTableHeight - 0.3f) {
+                if (!reset_player) 
+                    isCameraUnderWater = true;
+            } else {
+                isCameraUnderWater = false;
+            }
         } else {
-            isCameraUnderWater = false;
+            if (cameraObject.transform.position.y < 0.3f) {
+                if (!reset_player) 
+                    isCameraUnderWater = true;
+            } else {
+                isCameraUnderWater = false;
+            }
         }
         
         
@@ -572,6 +598,12 @@ public class TickUpdate : MonoBehaviour {
 	
 	public bool processGUI() {
         
+        // Focus on the command console when active
+        if (doShowConsole) {
+            InputField consoleFieldA = CommandConsole.transform.GetChild(0).GetChild(0).GetComponent<InputField>();
+            consoleFieldA.ActivateInputField();
+        }
+        
         //
         // Command console toggle
         
@@ -604,7 +636,6 @@ public class TickUpdate : MonoBehaviour {
                 InputField consoleField = CommandConsole.transform.GetChild(0).GetChild(0).GetComponent<InputField>();
                 
                 consoleField.Select();
-                consoleField.ActivateInputField();
                 consoleField.text = "";
                 
                 Cursor.lockState = CursorLockMode.None;
@@ -674,11 +705,16 @@ public class TickUpdate : MonoBehaviour {
                     
                     inventory.updateInventory();
                     hudInterface.updateInHand();
+                    
+                    // Clear result item
+                    inventory.crafting.crafting_result.SetActive(false);
+                    inventory.crafting.result_image.texture = items[0].inventoryImage.GetTexture("_MainTex");
+                    
                 }
                 
                 isCrafting = false;
                 
-                Cursor.lockState = CursorLockMode.None;
+                Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible   = false;
                 doMouseLook      = true;
                 
@@ -734,6 +770,15 @@ public class TickUpdate : MonoBehaviour {
         //
         // Toggle crafting grid
         
+        if (isCrafting) {
+            if (craftingGridFade < 2f) {
+                craftingGridFade += 1f;
+                
+                CraftingGrid.transform.localScale = new Vector3(craftingGridFade, craftingGridFade, craftingGridFade);
+            }
+        }
+        
+        
         if ((!isPaused) & (!doShowConsole)) {
             
             if (Input.GetKeyDown(KeyCode.E)) {
@@ -745,6 +790,10 @@ public class TickUpdate : MonoBehaviour {
                 CommandConsole.transform.GetChild(0).GetChild(1).gameObject.SetActive(false);
                 
                 if (isCrafting) {
+                    
+                    CraftingGrid.transform.localScale = new Vector3(0f, 0f, 0f);
+                    craftingGridFade = 0f;
+                    
                     // Enable the crafting grid
                     Cursor.lockState = CursorLockMode.None;
                     Cursor.visible   = true;
@@ -753,9 +802,12 @@ public class TickUpdate : MonoBehaviour {
                     HUD.transform.GetChild(7).gameObject.SetActive(true);
                     HUD.transform.GetChild(9).gameObject.SetActive(true);
                     
+                    inventory.crafting.crafting_result.SetActive(false);
+                    inventory.crafting.result_image.texture = items[0].inventoryImage.GetTexture("_MainTex");
+                    
                 } else {
                     // Disable the crafting grid
-                    Cursor.lockState = CursorLockMode.None;
+                    Cursor.lockState = CursorLockMode.Locked;
                     Cursor.visible   = false;
                     doMouseLook      = true;
                     
@@ -923,9 +975,9 @@ public class TickUpdate : MonoBehaviour {
         
         GameObject chunkObject = ChunkList.transform.GetChild(staticOptimizeChunkCounter).gameObject;
         GameObject staticList  = chunkObject.transform.GetChild(2).gameObject;
-        ChunkTag   chunkTag    = chunkObject.transform.GetChild(0).gameObject.GetComponent<ChunkTag>();
+        ChunkTag   chunkTag    = chunkObject.GetComponent<ChunkTag>();
         
-        staticOptimizeObjectsPerTick = staticOptimizeUpdateRate * (int) (1f / Time.deltaTime);
+        staticOptimizeObjectsPerTick = staticOptimizeUpdateRate * ((int) ((Time.deltaTime * 1000f)) / 10);
         
         for (int i=0; i < staticOptimizeObjectsPerTick; i++) {
             
@@ -945,7 +997,7 @@ public class TickUpdate : MonoBehaviour {
                 // Get next chunk
                 chunkObject = ChunkList.transform.GetChild(staticOptimizeChunkCounter).gameObject;
                 staticList  = chunkObject.transform.GetChild(2).gameObject;
-                chunkTag    = chunkObject.transform.GetChild(0).gameObject.GetComponent<ChunkTag>();
+                chunkTag    = chunkObject.GetComponent<ChunkTag>();
                 
                 staticOptimizeCounter=-1;
                 continue;
@@ -964,7 +1016,7 @@ public class TickUpdate : MonoBehaviour {
                 // Get next chunk
                 chunkObject = ChunkList.transform.GetChild(staticOptimizeChunkCounter).gameObject;
                 staticList  = chunkObject.transform.GetChild(2).gameObject;
-                chunkTag    = chunkObject.transform.GetChild(0).gameObject.GetComponent<ChunkTag>();
+                chunkTag    = chunkObject.GetComponent<ChunkTag>();
                 
                 staticOptimizeCounter=-1;
                 continue;
@@ -982,9 +1034,6 @@ public class TickUpdate : MonoBehaviour {
             if (staticObject.transform.childCount == 5) {
                 GameObject hitbox = staticObject.transform.GetChild(0).gameObject;
                 
-                MeshRenderer bottomRenderer = staticObject.transform.GetChild(1).gameObject.GetComponent<MeshRenderer>();
-                MeshRenderer topRenderer    = staticObject.transform.GetChild(2).gameObject.GetComponent<MeshRenderer>();
-                
                 hitbox.SetActive(false);
                 
                 Vector3 voxelDirection = staticObject.transform.rotation.eulerAngles;
@@ -997,6 +1046,9 @@ public class TickUpdate : MonoBehaviour {
                         Ray rayForward  = new Ray(staticObject.transform.position, Vector3.forward);
                         Ray rayBack     = new Ray(staticObject.transform.position, Vector3.back);
                         
+                        MeshRenderer bottomRenderer = staticObject.transform.GetChild(1).gameObject.GetComponent<MeshRenderer>();
+                        MeshRenderer topRenderer    = staticObject.transform.GetChild(2).gameObject.GetComponent<MeshRenderer>();
+                        
                         if (Physics.Raycast(rayForward, out hit, 1, VoxelLayerMask)) {topRenderer   .enabled = false;} else {topRenderer   .enabled = true;}
                         if (Physics.Raycast(rayBack,    out hit, 1, VoxelLayerMask)) {bottomRenderer.enabled = false;} else {bottomRenderer.enabled = true;}
                     }
@@ -1007,6 +1059,9 @@ public class TickUpdate : MonoBehaviour {
                         Ray rayLeft   = new Ray(staticObject.transform.position, Vector3.left);
                         Ray rayRight  = new Ray(staticObject.transform.position, Vector3.right);
                         
+                        MeshRenderer bottomRenderer = staticObject.transform.GetChild(1).gameObject.GetComponent<MeshRenderer>();
+                        MeshRenderer topRenderer    = staticObject.transform.GetChild(2).gameObject.GetComponent<MeshRenderer>();
+                        
                         if (Physics.Raycast(rayLeft,  out hit, 1, VoxelLayerMask)) {topRenderer   .enabled = false;} else {topRenderer   .enabled = true;}
                         if (Physics.Raycast(rayRight, out hit, 1, VoxelLayerMask)) {bottomRenderer.enabled = false;} else {bottomRenderer.enabled = true;}
                     }
@@ -1016,6 +1071,9 @@ public class TickUpdate : MonoBehaviour {
                         RaycastHit hit;
                         Ray rayTop     = new Ray(staticObject.transform.position, Vector3.up);
                         Ray rayBottom  = new Ray(staticObject.transform.position, Vector3.down);
+                        
+                        MeshRenderer bottomRenderer = staticObject.transform.GetChild(1).gameObject.GetComponent<MeshRenderer>();
+                        MeshRenderer topRenderer    = staticObject.transform.GetChild(2).gameObject.GetComponent<MeshRenderer>();
                         
                         if (Physics.Raycast(rayTop,    out hit, 1, VoxelLayerMask)) {topRenderer   .enabled = false;} else {topRenderer   .enabled = true;}
                         if (Physics.Raycast(rayBottom, out hit, 1, VoxelLayerMask)) {bottomRenderer.enabled = false;} else {bottomRenderer.enabled = true;}
@@ -1045,19 +1103,53 @@ public class TickUpdate : MonoBehaviour {
                     Ray rayTop     = new Ray(staticObject.transform.position, Vector3.up);
                     Ray rayBottom  = new Ray(staticObject.transform.position, Vector3.down);
                     
-                    MeshRenderer backRenderer   = hitbox.transform.GetChild(0).GetComponent<MeshRenderer>();
-                    MeshRenderer frontRenderer  = hitbox.transform.GetChild(1).GetComponent<MeshRenderer>();
-                    MeshRenderer rightRenderer  = hitbox.transform.GetChild(2).GetComponent<MeshRenderer>();
-                    MeshRenderer leftRenderer   = hitbox.transform.GetChild(3).GetComponent<MeshRenderer>();
-                    MeshRenderer topRenderer    = hitbox.transform.GetChild(4).GetComponent<MeshRenderer>();
-                    MeshRenderer bottomRenderer = hitbox.transform.GetChild(5).GetComponent<MeshRenderer>();
+                    // Front
+                    if (Physics.Raycast(rayFront, out hit, 1, VoxelLayerMask)) {
+                        if (hit.transform.parent.transform.parent.transform.childCount == 2) 
+                            hitbox.transform.GetChild(1).GetComponent<MeshRenderer>().enabled = false;
+                    } else {
+                        hitbox.transform.GetChild(1).GetComponent<MeshRenderer>().enabled = true;
+                    }
                     
-                    if (Physics.Raycast(rayBack,   out hit, 1, VoxelLayerMask)) {if (hit.transform.parent.transform.parent.transform.childCount == 2) backRenderer  .enabled = false;} else {backRenderer  .enabled = true;}
-                    if (Physics.Raycast(rayFront,  out hit, 1, VoxelLayerMask)) {if (hit.transform.parent.transform.parent.transform.childCount == 2) frontRenderer .enabled = false;} else {frontRenderer .enabled = true;}
-                    if (Physics.Raycast(rayRight,  out hit, 1, VoxelLayerMask)) {if (hit.transform.parent.transform.parent.transform.childCount == 2) rightRenderer .enabled = false;} else {rightRenderer .enabled = true;}
-                    if (Physics.Raycast(rayLeft,   out hit, 1, VoxelLayerMask)) {if (hit.transform.parent.transform.parent.transform.childCount == 2) leftRenderer  .enabled = false;} else {leftRenderer  .enabled = true;}
-                    if (Physics.Raycast(rayTop,    out hit, 1, VoxelLayerMask)) {if (hit.transform.parent.transform.parent.transform.childCount == 2) topRenderer   .enabled = false;} else {topRenderer   .enabled = true;}
-                    if (Physics.Raycast(rayBottom, out hit, 1, VoxelLayerMask)) {if (hit.transform.parent.transform.parent.transform.childCount == 2) bottomRenderer.enabled = false;} else {bottomRenderer.enabled = true;}
+                    // Back
+                    if (Physics.Raycast(rayBack, out hit, 1, VoxelLayerMask)) {
+                        if (hit.transform.parent.transform.parent.transform.childCount == 2) 
+                            hitbox.transform.GetChild(0).GetComponent<MeshRenderer>().enabled = false;
+                    } else {
+                        hitbox.transform.GetChild(0).GetComponent<MeshRenderer>().enabled = true;
+                    }
+                    
+                    // Right
+                    if (Physics.Raycast(rayRight, out hit, 1, VoxelLayerMask)) {
+                        if (hit.transform.parent.transform.parent.transform.childCount == 2) 
+                            hitbox.transform.GetChild(2).GetComponent<MeshRenderer>().enabled = false;
+                    } else {
+                        hitbox.transform.GetChild(2).GetComponent<MeshRenderer>().enabled = true;
+                    }
+                    
+                    // Left
+                    if (Physics.Raycast(rayLeft, out hit, 1, VoxelLayerMask)) {
+                        if (hit.transform.parent.transform.parent.transform.childCount == 2) 
+                            hitbox.transform.GetChild(3).GetComponent<MeshRenderer>().enabled = false;
+                    } else {
+                        hitbox.transform.GetChild(3).GetComponent<MeshRenderer>().enabled = true;
+                    }
+                    
+                    // Top
+                    if (Physics.Raycast(rayTop, out hit, 1, VoxelLayerMask)) {
+                        if (hit.transform.parent.transform.parent.transform.childCount == 2) 
+                            hitbox.transform.GetChild(4).GetComponent<MeshRenderer>().enabled = false;
+                    } else {
+                        hitbox.transform.GetChild(4).GetComponent<MeshRenderer>().enabled = true;
+                    }
+                    
+                    // Bottom
+                    if (Physics.Raycast(rayBottom, out hit, 1, VoxelLayerMask)) {
+                        if (hit.transform.parent.transform.parent.transform.childCount == 2) 
+                            hitbox.transform.GetChild(5).GetComponent<MeshRenderer>().enabled = false;
+                    } else {
+                        hitbox.transform.GetChild(5).GetComponent<MeshRenderer>().enabled = true;
+                    }
                     
                 }
                 
@@ -1093,7 +1185,7 @@ public class TickUpdate : MonoBehaviour {
         
         GameObject chunkObject = ChunkList.transform.GetChild(staticChunkCounter).gameObject;
         GameObject staticList  = chunkObject.transform.GetChild(2).gameObject;
-        //ChunkTag   chunkTag    = chunkObject.transform.GetChild(0).gameObject.GetComponent<ChunkTag>();
+        //ChunkTag   chunkTag    = chunkObject.GetComponent<ChunkTag>();
         
         staticObjectsPerTick = staticUpdateRate * (int) (1f / Time.deltaTime);
         
@@ -1113,7 +1205,7 @@ public class TickUpdate : MonoBehaviour {
                 // Get next chunk
                 chunkObject = ChunkList.transform.GetChild(staticChunkCounter).gameObject;
                 staticList  = chunkObject.transform.GetChild(2).gameObject;
-                //chunkTag    = chunkObject.transform.GetChild(0).gameObject.GetComponent<ChunkTag>();
+                //chunkTag    = chunkObject.GetComponent<ChunkTag>();
                 
                 staticCounter=-1;
                 continue;
@@ -1479,9 +1571,9 @@ public class TickUpdate : MonoBehaviour {
             
             float farRenderDistance = 0;
             
-            if (RenderDistance == 2) farRenderDistance = RenderDistance * 100f * 2.0f;
-            if (RenderDistance == 3) farRenderDistance = RenderDistance * 100f * 1.75f;
-            if (RenderDistance > 3)  farRenderDistance = RenderDistance * 100f * 1.5f;
+            if (RenderDistance == 2) farRenderDistance = RenderDistance * 100f * 3.0f;
+            if (RenderDistance == 3) farRenderDistance = RenderDistance * 100f * 2.5f;
+            if (RenderDistance >  3) farRenderDistance = RenderDistance * 100f * 2.0f;
             
             for(int i = 0; i < ChunkList.transform.childCount; i++) {
                 
@@ -1492,7 +1584,7 @@ public class TickUpdate : MonoBehaviour {
                 
                 if (Vector3.Distance(chunk_pos, player_pos) > farRenderDistance) {
                     
-                    // Save bypass for debugging
+                    // Bypass saving for debugging
                     if (!doSaveChunks) {
                         Destroy(chunkObject);
                         continue;
@@ -1850,7 +1942,6 @@ public class TickUpdate : MonoBehaviour {
         int numberOfItems = chunkGenerator.items.Count;
         
         StructureData structureData = new StructureData(numberOfItems);
-        int structureHeight = 0;
         
         for (int i=0; i < numberOfItems; i++) {
             
@@ -1860,10 +1951,6 @@ public class TickUpdate : MonoBehaviour {
             structureData.position[i] = new Vec3(chunkGenerator.items[i].position);
             structureData.rotation[i] = new Vec3(chunkGenerator.items[i].rotation);
             structureData.scale[i]    = new Vec3(chunkGenerator.items[i].scale);
-            
-            // Find structure height
-            if ((int)structureData.rotation[i].y > structureHeight) 
-                structureHeight = (int)structureData.rotation[i].y;
         }
         
         // Check structures directory
@@ -1929,7 +2016,8 @@ public class TickUpdate : MonoBehaviour {
         
         // Load the data
         int numberOfItems = structureData.name.Length;
-        int structureHeight=0;
+        int structureWidth = 0;
+        int structureHeight = 0;
         
         for (int i=0; i < numberOfItems; i++) {
             
@@ -1943,10 +2031,12 @@ public class TickUpdate : MonoBehaviour {
             
             chunkGenerator.items.Add(newStructureItem);
             
-            if ((int)newStructureItem.position.y > structureHeight) 
-                structureHeight = (int)newStructureItem.position.y;
+            if ((int)newStructureItem.position.x > structureWidth)  structureWidth  = (int)newStructureItem.position.x;
+            if ((int)newStructureItem.position.z > structureHeight) structureHeight = (int)newStructureItem.position.z;
             
         }
+        
+        chunkGenerator.structureWidth  = structureWidth;
         chunkGenerator.structureHeight = structureHeight;
         
         return 1;
@@ -1961,7 +2051,7 @@ public class TickUpdate : MonoBehaviour {
 	//
 	// Place a structure into the world at the player position
 	
-	public void placeStructureInWorld(string structureName, Vector3 position) {
+	public bool placeStructureInWorld(string structureName, Vector3 position) {
         //LayerMask objectLayerMask = LayerMask.GetMask("Object");
         
         StructureBuild build = null;
@@ -1972,11 +2062,15 @@ public class TickUpdate : MonoBehaviour {
                 continue;
             
             build = chunkGenerator.worldStructures[i];
+            
+            chunkGenerator.structureWidth  = chunkGenerator.worldStructures[i].structureWidth;
+            chunkGenerator.structureHeight = chunkGenerator.worldStructures[i].structureHeight;
+            
             break;
         }
         
         if (build == null) 
-            return;
+            return false;
         
         for (int i=0; i < build.items.Count; i++) {
             
@@ -1986,7 +2080,7 @@ public class TickUpdate : MonoBehaviour {
             
             GameObject targetChunk = getChunk(chunkX, chunkZ);
             if (targetChunk == null)
-                return;
+                return false;
             
             GameObject newStatic = MonoBehaviour.Instantiate( Resources.Load( build.items[i].name )) as GameObject;
             newStatic.name             = build.items[i].name;
@@ -2047,7 +2141,7 @@ public class TickUpdate : MonoBehaviour {
             itemTag.lifeTime   = -1;
             
         }
-        
+        return true;
     }
 	
 	
@@ -2085,6 +2179,7 @@ public class TickUpdate : MonoBehaviour {
             
             structBuild.structureName = chunkGenerator.structureName;
             
+            structBuild.structureWidth  = chunkGenerator.structureWidth;
             structBuild.structureHeight = chunkGenerator.structureHeight;
             
             structBuild.items    = new List<StructureItem>(chunkGenerator.items);
@@ -2117,7 +2212,7 @@ public class TickUpdate : MonoBehaviour {
         GameObject chunk = getChunk( target_x, target_z );
         if (chunk == null) return 0f;
         
-        ChunkTag chunkTag = chunk.transform.GetChild(0).GetComponent<ChunkTag>();
+        ChunkTag chunkTag = chunk.GetComponent<ChunkTag>();
         
         return chunkTag.vertex_grid[(int)target_x, (int)target_z];
 	}
@@ -2202,6 +2297,7 @@ public class TickUpdate : MonoBehaviour {
         Cursor.visible = false;
         
         isPaused           = false;
+        isCrafting         = false;
         doShowConsole      = false;
         doMouseLook        = true;
         
@@ -2257,7 +2353,7 @@ public class TickUpdate : MonoBehaviour {
                 if (chunkSerializer.chunkExists(currentLoadingX, currentLoadingZ)) {
                     
                     GameObject generated_chunk = chunkGenerator.generateChunk(currentLoadingX, currentLoadingZ, false, true);
-                    //ChunkTag generated_chunk_tag = generated_chunk.gameObject.transform.GetChild(0).GetComponent<ChunkTag>();
+                    //ChunkTag generated_chunk_tag = generated_chunk.GetComponent<ChunkTag>();
                     
                     chunkSerializer.chunkLoadStart(generated_chunk, currentLoadingX, currentLoadingZ);
                     
@@ -2274,7 +2370,7 @@ public class TickUpdate : MonoBehaviour {
                 } else {
                     
                     GameObject generated_chunk = chunkGenerator.generateChunk(currentLoadingX, currentLoadingZ, chunkGenerator.addWorldDecorations, false);
-                    //ChunkTag generated_chunk_tag = generated_chunk.gameObject.transform.GetChild(0).GetComponent<ChunkTag>();
+                    //ChunkTag generated_chunk_tag = generated_chunk.GetComponent<ChunkTag>();
                     
                     if (Vector3.Distance(playerObject.transform.position, generated_chunk.transform.position) < (RenderDistance * StaticDistance * 100f))
                     generated_chunk.transform.GetChild(2).gameObject.SetActive(true);
@@ -2357,7 +2453,7 @@ public class TickUpdate : MonoBehaviour {
         for(int i = 0; i < ChunkList.transform.childCount; i++) {
             
             GameObject chunkObject = ChunkList.transform.GetChild(i).gameObject;
-            ChunkTag chunkTag = chunkObject.transform.GetChild(0).GetComponent<ChunkTag>();
+            ChunkTag chunkTag = chunkObject.GetComponent<ChunkTag>();
             
             // Do not save the chunk if it has not loaded
             if (!chunkTag.isLoaded) 
@@ -2515,6 +2611,12 @@ public class TickUpdate : MonoBehaviour {
                 
                 newEntity.name = entityName;
                 newEntity.transform.parent = currentChunk.transform.GetChild(1).gameObject.transform;
+                
+                ActorTag actorTag = newEntity.GetComponent<ActorTag>();
+                
+                // Set to home chunk
+                string homeChunk = ((int)newPosition.x).ToString() + "." + ((int)newPosition.z).ToString();
+                actorTag.addMemory("home", homeChunk);
                 
                 // Update the genetics
                 GeneTag entityGene = newEntity.GetComponent<GeneTag>();
@@ -2827,7 +2929,7 @@ public class TickUpdate : MonoBehaviour {
             GameObject corner_chunk = getChunk( join_x, join_z );
             if (corner_chunk == null) return null;
             
-            ChunkTag cornerChunkTag = corner_chunk.transform.GetChild(0).GetComponent<ChunkTag>();
+            ChunkTag cornerChunkTag = corner_chunk.GetComponent<ChunkTag>();
             
             cornerChunkTag.vertex_grid[100, 100] += terrain_damage;
             if (cornerChunkTag.vertex_grid[100, 100] < 0f) cornerChunkTag.vertex_grid[100, 100] = 0f;
@@ -2851,7 +2953,7 @@ public class TickUpdate : MonoBehaviour {
             GameObject corner_chunk = getChunk( join_x, join_z );
             if (corner_chunk == null) return null;
             
-            ChunkTag cornerChunkTag = corner_chunk.transform.GetChild(0).GetComponent<ChunkTag>();
+            ChunkTag cornerChunkTag = corner_chunk.GetComponent<ChunkTag>();
             
             cornerChunkTag.vertex_grid[0, 0] += terrain_damage;
             if (cornerChunkTag.vertex_grid[0, 0] < 0f) cornerChunkTag.vertex_grid[0, 0] = 0f;
@@ -2875,7 +2977,7 @@ public class TickUpdate : MonoBehaviour {
             GameObject corner_chunk = getChunk( join_x, join_z );
             if (corner_chunk == null) return null;
             
-            ChunkTag cornerChunkTag = corner_chunk.transform.GetChild(0).GetComponent<ChunkTag>();
+            ChunkTag cornerChunkTag = corner_chunk.GetComponent<ChunkTag>();
             
             cornerChunkTag.vertex_grid[100, 0] += terrain_damage;
             if (cornerChunkTag.vertex_grid[100, 0] < 0f) cornerChunkTag.vertex_grid[100, 0] = 0f;
@@ -2899,7 +3001,7 @@ public class TickUpdate : MonoBehaviour {
             GameObject corner_chunk = getChunk( join_x, join_z );
             if (corner_chunk == null) return null;
             
-            ChunkTag cornerChunkTag = corner_chunk.transform.GetChild(0).GetComponent<ChunkTag>();
+            ChunkTag cornerChunkTag = corner_chunk.GetComponent<ChunkTag>();
             
             cornerChunkTag.vertex_grid[0, 100] += terrain_damage;
             if (cornerChunkTag.vertex_grid[0, 100] < 0f) cornerChunkTag.vertex_grid[0, 100] = 0f;
@@ -2917,7 +3019,7 @@ public class TickUpdate : MonoBehaviour {
             GameObject join_chunk = getChunk( join_x, join_z );
             if (join_chunk == null) return null;
             
-            ChunkTag joinChunkTag = join_chunk.transform.GetChild(0).GetComponent<ChunkTag>();
+            ChunkTag joinChunkTag = join_chunk.GetComponent<ChunkTag>();
             
             joinChunkTag.vertex_grid[100,   (int)target_z]   += terrain_damage;
             joinChunkTag.vertex_grid[100,   (int)target_z+1] += terrain_damage;
@@ -2936,7 +3038,7 @@ public class TickUpdate : MonoBehaviour {
             GameObject join_chunk = getChunk( join_x, join_z );
             if (join_chunk == null) return null;
             
-            ChunkTag joinChunkTag = join_chunk.transform.GetChild(0).GetComponent<ChunkTag>();
+            ChunkTag joinChunkTag = join_chunk.GetComponent<ChunkTag>();
             
             joinChunkTag.vertex_grid[0,   (int)target_z]   += terrain_damage;
             joinChunkTag.vertex_grid[0,   (int)target_z+1] += terrain_damage;
@@ -2955,7 +3057,7 @@ public class TickUpdate : MonoBehaviour {
             GameObject join_chunk = getChunk( join_x, join_z );
             if (join_chunk == null) return null;
             
-            ChunkTag joinChunkTag = join_chunk.transform.GetChild(0).GetComponent<ChunkTag>();
+            ChunkTag joinChunkTag = join_chunk.GetComponent<ChunkTag>();
             
             joinChunkTag.vertex_grid[(int)target_x,   100] += terrain_damage;
             joinChunkTag.vertex_grid[(int)target_x+1, 100] += terrain_damage;
@@ -2974,7 +3076,7 @@ public class TickUpdate : MonoBehaviour {
             GameObject join_chunk = getChunk( join_x, join_z );
             if (join_chunk == null) return null;
             
-            ChunkTag joinChunkTag = join_chunk.transform.GetChild(0).GetComponent<ChunkTag>();
+            ChunkTag joinChunkTag = join_chunk.GetComponent<ChunkTag>();
             
             joinChunkTag.vertex_grid[(int)target_x,   0] += terrain_damage;
             joinChunkTag.vertex_grid[(int)target_x+1, 0] += terrain_damage;
@@ -3013,6 +3115,19 @@ public class TickUpdate : MonoBehaviour {
 //
 // Container base types for items, entities, weapons, breakable items etc...
 //
+
+[System.Serializable]
+public class CraftableItem {
+	public string    name;
+	
+	public string[]  layout = new string[9];
+	
+	public string    resultName;
+	public int       resultCount;
+	public int       resultDurability;
+	public string    resultData;
+}
+
 
 [System.Serializable]
 public struct InventoryItem {

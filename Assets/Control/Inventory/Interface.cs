@@ -40,6 +40,10 @@ public class Interface : MonoBehaviour {
 	public int     grabbedItemDurability;
 	public string  grabbedItemData;
 	
+	public int     grabbedCurrentHoverArea = 0;
+	public int     grabbedCurrentHoverSlot = -1;
+	public int     grabbedLastHoverSlot    = -1;
+	
 	
 	
 	
@@ -81,155 +85,212 @@ public class Interface : MonoBehaviour {
         }
         
         
-        
-	}
-	
-	
-	
-	
-	public void checkCraftingTable() {
-        
-        if (inventory.crafting.Name[4] == "") {
-            inventory.crafting.crafting_result.SetActive(false);
-            return;
+        if (Input.GetButtonDown("Place")) {
+            
+            grabbedCurrentHoverSlot = -1;
+            grabbedLastHoverSlot    = -1;
+            
         }
         
-        inventory.crafting.result_image.texture = inventory.crafting.slot_image[4].texture;
-        inventory.crafting.result_count.text    = inventory.crafting.slot_count[4].text;
         
-        inventory.crafting.crafting_result.SetActive(true);
-        
-        return;
-    }
-	
-	
-	
-	public void flushCraftingGrid() {
-        
-        for (int i=0; i < 9; i++) {
+        if (Input.GetButton("Place")) {
             
-            if (!inventory.crafting.State[i]) 
-                continue;
             
-            string craftName        = inventory.crafting.Name[i];
-            //int    craftStack       = inventory.crafting.Stack[i];
-            int    craftStackMax    = inventory.crafting.StackMax[i];
-            int    craftDurability  = inventory.crafting.Durability[i];
-            string craftData        = inventory.crafting.Data[i];
-            
-            inventory.addItem(craftName, 1, craftStackMax, craftDurability, craftData);
-            
-            inventory.crafting.State[i] = false;
-            
-            inventory.crafting.slot_image[i].texture = tickUpdate.items[0].inventoryImage.GetTexture("_MainTex");
-        }
-        
-        return;
-	}
-	
-	
-	
-	
-	
-	
-	public void clickCraftingResult() {
-        
-        
-        
-        return;
-	}
-	
-	
-	
-	
-	
-	
-	public void clickCraftingItem(int itemIndex) {
-        
-	    if (!tickUpdate.isCrafting) return;
-        
-	    // Left click - Drop item onto crafting grid
-	    if (Input.GetButtonDown("Attack")) {
-            
-            if (isHolding) {
+            // Check inventory system splay
+            if (grabbedCurrentHoverArea == 0) {
                 
-                if (!inventory.crafting.State[itemIndex]) {
+                if (grabbedCurrentHoverSlot != grabbedLastHoverSlot) {
+                    grabbedLastHoverSlot = grabbedCurrentHoverSlot;
                     
-                    inventory.crafting.slot_image[itemIndex].texture = grabbedItemImage.texture;
-                    grabbedItemStack--;
+                    int itemIndex = grabbedLastHoverSlot;
                     
-                    if (grabbedItemStack < 2) {
-                        grabbedItemCount.text = "";
-                    } else {
-                        grabbedItemCount.text = grabbedItemStack.ToString();
-                    }
-                    
-                    // Last item
-                    if (grabbedItemStack < 1) {
-                        isHolding = false;
-                        grabbedItem.SetActive(false);
-                    }
-                    
-                    inventory.crafting.Name[itemIndex]       = grabbedItemName;
-                    inventory.crafting.Stack[itemIndex]      = grabbedItemStack;
-                    inventory.crafting.StackMax[itemIndex]   = grabbedItemStackMax;
-                    inventory.crafting.Durability[itemIndex] = grabbedItemDurability;
-                    inventory.crafting.Data[itemIndex]       = grabbedItemData;
-                    
-                    inventory.crafting.State[itemIndex] = true;
-                    
-                // Grab item from the crafting grid if were holding the same type
-                } else {
-                    
-                    // Check type and data
-                    if ((inventory.crafting.Name[itemIndex] == grabbedItemName) & 
-                        (inventory.crafting.Data[itemIndex] == grabbedItemData)) {
+                    if (isHolding) {
                         
-                        grabbedItemStack++;
-                        
-                        if (grabbedItemStack < 2) {
-                            grabbedItemCount.text = "";
+                        if (!inventory.State[itemIndex]) {
+                            
+                            inventory.State[itemIndex] = true;
+                            
+                            inventory.Name[itemIndex]         = grabbedItemName;
+                            inventory.Stack[itemIndex]        = 1;
+                            inventory.StackMax[itemIndex]     = grabbedItemStackMax;
+                            inventory.Durability[itemIndex]   = grabbedItemDurability;
+                            inventory.Data[itemIndex]         = grabbedItemData;
+                            
+                            
+                            inventory.slot_image[itemIndex].texture = grabbedItemImage.texture;
+                            
+                            inventory.slot_count[itemIndex].text = "";
+                            
+                            grabbedItemStack--;
+                            if (grabbedItemStack < 2) {
+                                grabbedItemCount.text = "";
+                            } else {
+                                grabbedItemCount.text = grabbedItemStack.ToString();
+                            }
+                            
+                            if (grabbedItemStack == 0) {
+                                
+                                // Clear last item
+                                isHolding = false;
+                                grabbedItem.SetActive(false);
+                                
+                                grabbedItemName        = "";
+                                grabbedItemStack       = 0;
+                                grabbedItemStackMax    = 0;
+                                grabbedItemDurability  = 0;
+                                grabbedItemData        = "";
+                                
+                            }
+                            
+                        // Same item, add one in
                         } else {
-                            grabbedItemCount.text = grabbedItemStack.ToString();
+                            
+                            if ((inventory.Name[itemIndex] == grabbedItemName) & 
+                                (inventory.Data[itemIndex] == grabbedItemData)) {
+                                
+                                inventory.Stack[itemIndex]++;
+                                if (inventory.Stack[itemIndex] < 2) {
+                                    inventory.slot_count[itemIndex].text = "";
+                                } else {
+                                    inventory.slot_count[itemIndex].text = inventory.Stack[itemIndex].ToString();
+                                }
+                                
+                                grabbedItemStack--;
+                                if (grabbedItemStack < 2) {
+                                    grabbedItemCount.text = "";
+                                } else {
+                                    grabbedItemCount.text = grabbedItemStack.ToString();
+                                }
+                                
+                                if (grabbedItemStack == 0) {
+                                    
+                                    // Clear last item
+                                    isHolding = false;
+                                    grabbedItem.SetActive(false);
+                                    
+                                    grabbedItemName        = "";
+                                    grabbedItemStack       = 0;
+                                    grabbedItemStackMax    = 0;
+                                    grabbedItemDurability  = 0;
+                                    grabbedItemData        = "";
+                                    
+                                }
+                                
+                            }
+                            
                         }
                         
-                        inventory.crafting.State[itemIndex] = false;
-                        
-                        inventory.crafting.slot_image[itemIndex].texture = tickUpdate.items[0].inventoryImage.GetTexture("_MainTex");
                     }
+                    
+                    
                 }
                 
-            } else {
+            } 
+            
+            
+            
+            
+            
+            // Check crafting grid splay
+            if (grabbedCurrentHoverArea == 1) {
                 
-                // Empty hand, grab the item from the crafting grid
-                if (inventory.crafting.State[itemIndex]) {
+                if (grabbedCurrentHoverSlot != grabbedLastHoverSlot) {
+                    grabbedLastHoverSlot = grabbedCurrentHoverSlot;
                     
-                    isHolding = true;
-                    grabbedItem.SetActive(true);
+                    int itemIndex = grabbedLastHoverSlot;
                     
-                    grabbedItemName        = inventory.crafting.Name[itemIndex];
-                    grabbedItemStack       = 1;
-                    grabbedItemStackMax    = inventory.crafting.StackMax[itemIndex];
-                    grabbedItemDurability  = inventory.crafting.Durability[itemIndex];
-                    grabbedItemData        = inventory.crafting.Data[itemIndex];
+                    if (isHolding) {
+                        
+                        if (!inventory.crafting.State[itemIndex]) {
+                            
+                            inventory.crafting.State[itemIndex] = true;
+                            
+                            inventory.crafting.Name[itemIndex]         = grabbedItemName;
+                            inventory.crafting.Stack[itemIndex]        = 1;
+                            inventory.crafting.StackMax[itemIndex]     = grabbedItemStackMax;
+                            inventory.crafting.Durability[itemIndex]   = grabbedItemDurability;
+                            inventory.crafting.Data[itemIndex]         = grabbedItemData;
+                            
+                            
+                            inventory.crafting.slot_image[itemIndex].texture = grabbedItemImage.texture;
+                            
+                            inventory.crafting.slot_count[itemIndex].text = "";
+                            
+                            grabbedItemStack--;
+                            if (grabbedItemStack < 2) {
+                                grabbedItemCount.text = "";
+                            } else {
+                                grabbedItemCount.text = grabbedItemStack.ToString();
+                            }
+                            
+                            if (grabbedItemStack == 0) {
+                                
+                                // Clear last item
+                                isHolding = false;
+                                grabbedItem.SetActive(false);
+                                
+                                grabbedItemName        = "";
+                                grabbedItemStack       = 0;
+                                grabbedItemStackMax    = 0;
+                                grabbedItemDurability  = 0;
+                                grabbedItemData        = "";
+                                
+                            }
+                            
+                        // Same item, add one in
+                        } else {
+                            
+                            if ((inventory.crafting.Name[itemIndex] == grabbedItemName) & 
+                                (inventory.crafting.Data[itemIndex] == grabbedItemData)) {
+                                
+                                inventory.crafting.Stack[itemIndex]++;
+                                if (inventory.crafting.Stack[itemIndex] < 2) {
+                                    inventory.crafting.slot_count[itemIndex].text = "";
+                                } else {
+                                    inventory.crafting.slot_count[itemIndex].text = inventory.crafting.Stack[itemIndex].ToString();
+                                }
+                                
+                                grabbedItemStack--;
+                                if (grabbedItemStack < 2) {
+                                    grabbedItemCount.text = "";
+                                } else {
+                                    grabbedItemCount.text = grabbedItemStack.ToString();
+                                }
+                                
+                                if (grabbedItemStack == 0) {
+                                    
+                                    // Clear last item
+                                    isHolding = false;
+                                    grabbedItem.SetActive(false);
+                                    
+                                    grabbedItemName        = "";
+                                    grabbedItemStack       = 0;
+                                    grabbedItemStackMax    = 0;
+                                    grabbedItemDurability  = 0;
+                                    grabbedItemData        = "";
+                                    
+                                }
+                                
+                            }
+                            
+                        }
+                        
+                    }
                     
-                    grabbedItemCount.text = "";
                     
-                    inventory.crafting.State[itemIndex] = false;
-                    
-                    grabbedItemImage.texture = inventory.crafting.slot_image[itemIndex].texture;
-                    
-                    inventory.crafting.slot_image[itemIndex].texture = tickUpdate.items[0].inventoryImage.GetTexture("_MainTex");
                 }
+                
+                // Update changes to the crafting grid
+                checkCraftingTable();
                 
             }
             
 	    }
-        
-        checkCraftingTable();
-        
+	    
         return;
 	}
+	
+	
 	
 	
 	
@@ -238,7 +299,8 @@ public class Interface : MonoBehaviour {
 	
 	public void clickInventoryItem(int itemIndex) {
 	    
-	    if (!tickUpdate.isCrafting) return;
+	    if (!tickUpdate.isCrafting)
+            return;
         
 	    // Left click - pick up or swap items
 	    if (Input.GetButtonDown("Attack")) {
@@ -248,6 +310,7 @@ public class Interface : MonoBehaviour {
                 
                 // Pick up the inventory item from the slot
                 if (!isHolding) {
+                    
                     isHolding = true;
                     grabbedItem.SetActive(true);
                     
@@ -271,33 +334,51 @@ public class Interface : MonoBehaviour {
                     
                     // Items are the same, add them to the same slot
                     if (inventory.Name[itemIndex] == grabbedItemName) {
-                        inventory.Stack[itemIndex] += grabbedItemStack;
                         
-                        isHolding = false;
-                        grabbedItem.SetActive(false);
+                        // Check stack MAX
+                        if ((grabbedItemStack + inventory.Stack[itemIndex]) > inventory.StackMax[itemIndex]) {
+                            
+                            grabbedItemStack = (grabbedItemStack + inventory.Stack[itemIndex]) - inventory.StackMax[itemIndex];
+                            if (grabbedItemStack < 2) {
+                                grabbedItemCount.text = "";
+                            } else {
+                                grabbedItemCount.text = grabbedItemStack.ToString();
+                            }
+                            
+                            inventory.Stack[itemIndex] = inventory.StackMax[itemIndex];
+                            
+                        } else {
+                            
+                            inventory.Stack[itemIndex] += grabbedItemStack;
+                            
+                            isHolding = false;
+                            grabbedItem.SetActive(false);
+                        }
                         
                     // Items are different, swap them
                     } else {
                         
-                        string tempItemName        = grabbedItemName;
-                        int    tempItemStack       = grabbedItemStack;
-                        int    tempItemStackMax    = grabbedItemStackMax;
-                        int    tempItemDurability  = grabbedItemDurability;
-                        string tempItemData        = grabbedItemData;
+                        string  tempItemName        = grabbedItemName;
+                        int     tempItemStack       = grabbedItemStack;
+                        int     tempItemStackMax    = grabbedItemStackMax;
+                        int     tempItemDurability  = grabbedItemDurability;
+                        string  tempItemData        = grabbedItemData;
+                        Texture tempItemImage       = grabbedItemImage.texture;
                         
-                        grabbedItemName        = inventory.Name[itemIndex];
-                        grabbedItemStack       = inventory.Stack[itemIndex];
-                        grabbedItemStackMax    = inventory.StackMax[itemIndex];
-                        grabbedItemDurability  = inventory.Durability[itemIndex];
-                        grabbedItemData        = inventory.Data[itemIndex];
+                        grabbedItemName            = inventory.Name[itemIndex];
+                        grabbedItemStack           = inventory.Stack[itemIndex];
+                        grabbedItemStackMax        = inventory.StackMax[itemIndex];
+                        grabbedItemDurability      = inventory.Durability[itemIndex];
+                        grabbedItemData            = inventory.Data[itemIndex];
+                        grabbedItemImage.texture   = inventory.slot_image[itemIndex].texture;
                         
                         inventory.Name[itemIndex]       = tempItemName;
                         inventory.Stack[itemIndex]      = tempItemStack;
                         inventory.StackMax[itemIndex]   = tempItemStackMax;
                         inventory.Durability[itemIndex] = tempItemDurability;
                         inventory.Data[itemIndex]       = tempItemData;
+                        inventory.slot_image[itemIndex].texture = tempItemImage;
                         
-                        grabbedItemImage.texture = inventory.slot_image[itemIndex].texture;
                         if (grabbedItemStack < 2) {
                             grabbedItemCount.text = "";
                         } else {
@@ -345,9 +426,14 @@ public class Interface : MonoBehaviour {
                 if (inventory.Data[itemIndex] != grabbedItemData) 
                     return;
                 
+                // Check stack MAX
+                if ((inventory.Stack[itemIndex]) >= grabbedItemStackMax) 
+                    return;
+                
                 inventory.Name[itemIndex] = grabbedItemName;
                 
                 grabbedItemStack--;
+                
                 inventory.Stack[itemIndex]++;
                 
                 inventory.StackMax[itemIndex]   = grabbedItemStackMax;
@@ -407,7 +493,550 @@ public class Interface : MonoBehaviour {
 	    return;
     }
     
+    
+    
+    
+    
 	
+	
+	
+	
+	
+	
+	
+	public void checkCraftingTable() {
+        int recipeIndex = -1;
+        
+        // Check recipe list
+        for (int i=0; i < tickUpdate.recipes.Length; i++) {
+            
+            for (int a=0; a < 9; a++) {
+                
+                if (tickUpdate.recipes[i].layout[a] != inventory.crafting.Name[a]) {
+                    recipeIndex = -1;
+                    break;
+                }
+                
+                recipeIndex = i;
+            }
+            
+            if (recipeIndex > -1) 
+                break;
+        }
+        
+        if (recipeIndex == -1) {
+            inventory.crafting.crafting_result.SetActive(false);
+            inventory.crafting.result_image.texture = tickUpdate.items[0].inventoryImage.GetTexture("_MainTex");
+            inventory.crafting.result_state = false;
+            return;
+        }
+        
+        int resultIndex = findInventoryItem( tickUpdate.recipes[recipeIndex].resultName );
+        int resultCount = tickUpdate.recipes[recipeIndex].resultCount;
+        
+        if (resultIndex == -1) 
+            return;
+        
+        inventory.crafting.result_image.texture = tickUpdate.items[resultIndex].inventoryImage.GetTexture("_MainTex");
+        inventory.crafting.result_state = true;
+        inventory.crafting.result_durability = tickUpdate.recipes[recipeIndex].resultDurability;
+        inventory.crafting.result_stackMax   = tickUpdate.items[resultIndex].stackMax;
+        
+        if (resultCount < 2) {
+            inventory.crafting.result_count.text = "";
+            inventory.crafting.result_stack = 1;
+        } else {
+            inventory.crafting.result_count.text = resultCount.ToString();
+            inventory.crafting.result_stack = resultCount;
+        }
+        
+        inventory.crafting.result_name = tickUpdate.items[resultIndex].name;
+        
+        inventory.crafting.crafting_result.SetActive(true);
+        
+        return;
+    }
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	public void clickCraftingResult() {
+        
+	    if (!tickUpdate.isCrafting) return;
+        if (!inventory.crafting.result_state) return;
+        
+	    // Left click - Grab item from crafting result
+	    if (Input.GetButtonDown("Attack")) {
+            
+            if (!isHolding) {
+                
+                if (inventory.crafting.result_stack > inventory.crafting.result_stackMax) 
+                    return;
+                
+                isHolding = true;
+                grabbedItem.SetActive(true);
+                
+                grabbedItemImage.texture = inventory.crafting.result_image.texture;
+                grabbedItemCount.text    = inventory.crafting.result_count.text;
+                
+                grabbedItemName        = inventory.crafting.result_name;
+                grabbedItemStack       = inventory.crafting.result_stack;
+                grabbedItemStackMax    = inventory.crafting.result_stackMax;
+                grabbedItemDurability  = inventory.crafting.result_durability;
+                grabbedItemData        = inventory.crafting.result_data;
+                
+                for (int i=0; i < 9; i++) {
+                    
+                    if (!inventory.crafting.State[i]) 
+                        continue;
+                    
+                    inventory.crafting.Stack[i]--;
+                    inventory.crafting.slot_count[i].text = inventory.crafting.Stack[i].ToString();
+                    
+                    if (inventory.crafting.Stack[i] < 2) {
+                        inventory.crafting.slot_count[i].text = "";
+                    } else {
+                        inventory.crafting.slot_count[i].text = inventory.crafting.Stack[i].ToString();
+                    }
+                    
+                    
+                    if (inventory.crafting.Stack[i] == 0) {
+                        
+                        inventory.crafting.Name[i]  = "";
+                        inventory.crafting.State[i] = false;
+                        
+                        inventory.crafting.slot_image[i].texture = tickUpdate.items[0].inventoryImage.GetTexture("_MainTex");
+                        inventory.crafting.slot_count[i].text = "";
+                        
+                        inventory.crafting.crafting_result.SetActive(false);
+                        inventory.crafting.result_image.texture = tickUpdate.items[0].inventoryImage.GetTexture("_MainTex");
+                        inventory.crafting.result_count.text    = "";
+                        
+                        inventory.crafting.result_state = false;
+                    }
+                    
+                }
+                
+            } else {
+                
+                // Check were holding the same item
+                if (grabbedItemName != inventory.crafting.result_name) 
+                    return;
+                
+                if ((inventory.crafting.result_stack + grabbedItemStack) > inventory.crafting.result_stackMax) 
+                    return;
+                
+                isHolding = true;
+                grabbedItem.SetActive(true);
+                
+                grabbedItemName        = inventory.crafting.result_name;
+                grabbedItemStack      += inventory.crafting.result_stack;
+                grabbedItemStackMax    = inventory.crafting.result_stackMax;
+                grabbedItemDurability  = inventory.crafting.result_durability;
+                grabbedItemData        = inventory.crafting.result_data;
+                
+                grabbedItemImage.texture = inventory.crafting.result_image.texture;
+                grabbedItemCount.text    = grabbedItemStack.ToString();
+                
+                for (int i=0; i < 9; i++) {
+                    
+                    if (!inventory.crafting.State[i]) 
+                        continue;
+                    
+                    inventory.crafting.Stack[i]--;
+                    inventory.crafting.slot_count[i].text = inventory.crafting.Stack[i].ToString();
+                    
+                    if (inventory.crafting.Stack[i] < 2) {
+                        inventory.crafting.slot_count[i].text = "";
+                    } else {
+                        inventory.crafting.slot_count[i].text = inventory.crafting.Stack[i].ToString();
+                    }
+                    
+                    
+                    if (inventory.crafting.Stack[i] == 0) {
+                        
+                        inventory.crafting.Name[i]  = "";
+                        inventory.crafting.State[i] = false;
+                        
+                        inventory.crafting.slot_image[i].texture = tickUpdate.items[0].inventoryImage.GetTexture("_MainTex");
+                        inventory.crafting.slot_count[i].text = "";
+                        
+                        inventory.crafting.crafting_result.SetActive(false);
+                        inventory.crafting.result_image.texture = tickUpdate.items[0].inventoryImage.GetTexture("_MainTex");
+                        inventory.crafting.result_count.text    = "";
+                        
+                        inventory.crafting.result_state = false;
+                    }
+                    
+                }
+                
+            }
+            
+	    }
+        
+        return;
+	}
+	
+	
+	
+	
+	
+	
+	public void clickCraftingItem(int itemIndex) {
+        
+	    if (!tickUpdate.isCrafting) return;
+        
+	    // Left click - Drop items onto crafting grid
+	    if (Input.GetButtonDown("Attack")) {
+            
+            if (isHolding) {
+                
+                if (!inventory.crafting.State[itemIndex]) {
+                    
+                    inventory.crafting.Name[itemIndex]       = grabbedItemName;
+                    inventory.crafting.Stack[itemIndex]      = grabbedItemStack;
+                    inventory.crafting.StackMax[itemIndex]   = grabbedItemStackMax;
+                    inventory.crafting.Durability[itemIndex] = grabbedItemDurability;
+                    inventory.crafting.Data[itemIndex]       = grabbedItemData;
+                    
+                    inventory.crafting.State[itemIndex] = true;
+                    
+                    inventory.crafting.slot_image[itemIndex].texture = grabbedItemImage.texture;
+                    if (inventory.crafting.Stack[itemIndex] < 2) {
+                        inventory.crafting.slot_count[itemIndex].text = "";
+                    } else {
+                        inventory.crafting.slot_count[itemIndex].text = inventory.crafting.Stack[itemIndex].ToString();
+                    }
+                    
+                    // Clear last item
+                    isHolding = false;
+                    grabbedItem.SetActive(false);
+                    
+                    grabbedItemName        = "";
+                    grabbedItemStack       = 0;
+                    grabbedItemStackMax    = 0;
+                    grabbedItemDurability  = 0;
+                    grabbedItemData        = "";
+                    
+                // Grab item from the crafting grid if were holding the same type
+                } else {
+                    
+                    // Check type and data
+                    if ((inventory.crafting.Name[itemIndex] == grabbedItemName) & 
+                        (inventory.crafting.Data[itemIndex] == grabbedItemData)) {
+                        
+                        if ((inventory.crafting.Stack[itemIndex] + grabbedItemStack) > inventory.crafting.StackMax[itemIndex]) {
+                            
+                            grabbedItemStack = (grabbedItemStack + inventory.crafting.Stack[itemIndex]) - inventory.crafting.StackMax[itemIndex];
+                            
+                            inventory.crafting.Stack[itemIndex] = inventory.crafting.StackMax[itemIndex];
+                            
+                            if (inventory.crafting.Stack[itemIndex] < 2) {
+                                inventory.crafting.slot_count[itemIndex].text = "";
+                            } else {
+                                inventory.crafting.slot_count[itemIndex].text = inventory.crafting.Stack[itemIndex].ToString();
+                            }
+                            
+                            if (grabbedItemStack < 2) {
+                                grabbedItemCount.text = "";
+                            } else {
+                                grabbedItemCount.text = grabbedItemStack.ToString();
+                            }
+                            
+                        } else {
+                            
+                            inventory.crafting.slot_image[itemIndex].texture = grabbedItemImage.texture;
+                            
+                            inventory.crafting.Stack[itemIndex] += grabbedItemStack;
+                            if (inventory.crafting.Stack[itemIndex] < 2) {
+                                inventory.crafting.slot_count[itemIndex].text = "";
+                            } else {
+                                inventory.crafting.slot_count[itemIndex].text = inventory.crafting.Stack[itemIndex].ToString();
+                            }
+                            
+                            // Clear holding item
+                            isHolding = false;
+                            grabbedItem.SetActive(false);
+                            
+                            grabbedItemName        = "";
+                            grabbedItemStack       = 0;
+                            grabbedItemStackMax    = 0;
+                            grabbedItemDurability  = 0;
+                            grabbedItemData        = "";
+                            
+                        }
+                        
+                    // Items are not the same, swap them
+                    } else {
+                        
+                        string   tempItemName        = grabbedItemName;
+                        int      tempItemStack       = grabbedItemStack;
+                        int      tempItemStackMax    = grabbedItemStackMax;
+                        int      tempItemDurability  = grabbedItemDurability;
+                        string   tempItemData        = grabbedItemData;
+                        Texture  tempItemImage       = grabbedItemImage.texture;
+                        
+                        grabbedItemName          = inventory.crafting.Name[itemIndex];
+                        grabbedItemStack         = inventory.crafting.Stack[itemIndex];
+                        grabbedItemStackMax      = inventory.crafting.StackMax[itemIndex];
+                        grabbedItemDurability    = inventory.crafting.Durability[itemIndex];
+                        grabbedItemData          = inventory.crafting.Data[itemIndex];
+                        grabbedItemImage.texture = inventory.crafting.slot_image[itemIndex].texture;
+                        
+                        inventory.crafting.Name[itemIndex]       = tempItemName;
+                        inventory.crafting.Stack[itemIndex]      = tempItemStack;
+                        inventory.crafting.StackMax[itemIndex]   = tempItemStackMax;
+                        inventory.crafting.Durability[itemIndex] = tempItemDurability;
+                        inventory.crafting.Data[itemIndex]       = tempItemData;
+                        inventory.crafting.slot_image[itemIndex].texture = tempItemImage;
+                        
+                        if (grabbedItemStack < 2) {
+                            grabbedItemCount.text = "";
+                        } else {
+                            grabbedItemCount.text = grabbedItemStack.ToString();
+                        }
+                        
+                        if (inventory.crafting.Stack[itemIndex] < 2) {
+                            inventory.crafting.slot_count[itemIndex].text = "";
+                        } else {
+                            inventory.crafting.slot_count[itemIndex].text = inventory.crafting.Stack[itemIndex].ToString();
+                        }
+                        
+                    }
+                    
+                }
+                
+            } else {
+                
+                // Empty hand, grab the item from the crafting grid
+                if (inventory.crafting.State[itemIndex]) {
+                    
+                    isHolding = true;
+                    grabbedItem.SetActive(true);
+                    
+                    grabbedItemName        = inventory.crafting.Name[itemIndex];
+                    grabbedItemStack       = inventory.crafting.Stack[itemIndex];
+                    grabbedItemStackMax    = inventory.crafting.StackMax[itemIndex];
+                    grabbedItemDurability  = inventory.crafting.Durability[itemIndex];
+                    grabbedItemData        = inventory.crafting.Data[itemIndex];
+                    
+                    if (grabbedItemStack < 2) {
+                        grabbedItemCount.text = "";
+                    } else {
+                        grabbedItemCount.text = grabbedItemStack.ToString();
+                    }
+                    
+                    inventory.crafting.Name[itemIndex]  = "";
+                    inventory.crafting.State[itemIndex] = false;
+                    
+                    grabbedItemImage.texture = inventory.crafting.slot_image[itemIndex].texture;
+                    
+                    inventory.crafting.slot_image[itemIndex].texture = tickUpdate.items[0].inventoryImage.GetTexture("_MainTex");
+                    inventory.crafting.slot_count[itemIndex].text    = "";
+                }
+                
+            }
+            
+            // Update changes to the crafting grid
+            checkCraftingTable();
+            
+	    }
+        
+        
+        
+	    // Right click - Drop items into the grid
+	    if (Input.GetButtonDown("Place")) {
+            
+            if (isHolding) {
+                
+                if (inventory.crafting.State[itemIndex]) {
+                    
+                    if ((inventory.crafting.Name[itemIndex] == grabbedItemName)) {
+                        
+                        if (inventory.crafting.Stack[itemIndex] >= inventory.crafting.StackMax[itemIndex]) 
+                            return;
+                        
+                        inventory.crafting.Stack[itemIndex]++;
+                        
+                        if (inventory.crafting.Stack[itemIndex] < 2) {
+                            inventory.crafting.slot_count[itemIndex].text = "";
+                        } else {
+                            inventory.crafting.slot_count[itemIndex].text = inventory.crafting.Stack[itemIndex].ToString();
+                        }
+                        
+                        grabbedItemStack--;
+                        
+                        if (grabbedItemStack < 2) {
+                            grabbedItemCount.text = "";
+                        } else {
+                            grabbedItemCount.text = grabbedItemStack.ToString();
+                        }
+                        
+                        if (grabbedItemStack == 0) {
+                            isHolding = false;
+                            grabbedItem.SetActive(false);
+                        }
+                        
+                    }
+                    
+                // Slot empty, add item
+                } else {
+                    
+                    inventory.crafting.State[itemIndex] = true;
+                    
+                    inventory.crafting.Name[itemIndex]        = grabbedItemName;
+                    inventory.crafting.Stack[itemIndex]       = 1;
+                    inventory.crafting.StackMax[itemIndex]    = grabbedItemStackMax;
+                    inventory.crafting.Durability[itemIndex]  = grabbedItemDurability;
+                    inventory.crafting.Data[itemIndex]        = grabbedItemData;
+                    
+                    inventory.crafting.slot_image[itemIndex].texture = grabbedItemImage.texture;
+                    inventory.crafting.slot_count[itemIndex].text = "";
+                    
+                    grabbedItemStack--;
+                    
+                    if (grabbedItemStack < 2) {
+                        grabbedItemCount.text = "";
+                    } else {
+                        grabbedItemCount.text = grabbedItemStack.ToString();
+                    }
+                    
+                    if (grabbedItemStack == 0) {
+                        isHolding = false;
+                        grabbedItem.SetActive(false);
+                    }
+                    
+                }
+                
+            // Empty hand, grab half the items in the slot
+            } else {
+                
+                if (inventory.crafting.State[itemIndex]) {
+                    
+                    int halfStack   = inventory.crafting.Stack[itemIndex] / 2;
+                    int remainStack = inventory.crafting.Stack[itemIndex] - halfStack;
+                    
+                    isHolding = true;
+                    grabbedItem.SetActive(true);
+                    
+                    grabbedItemName        = inventory.crafting.Name[itemIndex];
+                    grabbedItemStack       = remainStack;
+                    grabbedItemStackMax    = inventory.crafting.StackMax[itemIndex];
+                    grabbedItemDurability  = inventory.crafting.Durability[itemIndex];
+                    grabbedItemData        = inventory.crafting.Data[itemIndex];
+                    
+                    grabbedItemImage.texture = inventory.crafting.slot_image[itemIndex].texture;
+                    if (grabbedItemStack < 2) {
+                        grabbedItemCount.text = "";
+                    } else {
+                        grabbedItemCount.text = grabbedItemStack.ToString();
+                    }
+                    
+                    inventory.crafting.Stack[itemIndex] = halfStack;
+                    
+                    if (inventory.crafting.Stack[itemIndex] < 2) {
+                        inventory.crafting.slot_count[itemIndex].text = "";
+                    } else {
+                        inventory.crafting.slot_count[itemIndex].text = inventory.crafting.Stack[itemIndex].ToString();
+                    }
+                    
+                    if (inventory.crafting.Stack[itemIndex] == 0) {
+                        
+                        inventory.crafting.Name[itemIndex]  = "";
+                        inventory.crafting.State[itemIndex] = false;
+                        
+                        grabbedItemImage.texture = inventory.crafting.slot_image[itemIndex].texture;
+                        
+                        inventory.crafting.slot_image[itemIndex].texture = tickUpdate.items[0].inventoryImage.GetTexture("_MainTex");
+                        inventory.crafting.slot_count[itemIndex].text    = "";
+                    }
+                    
+                }
+                
+            }
+            
+            // Update changes to the crafting grid
+            checkCraftingTable();
+	    }
+	    
+	    return;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	public void flushCraftingGrid() {
+        
+        for (int i=0; i < 9; i++) {
+            
+            if (!inventory.crafting.State[i]) 
+                continue;
+            
+            string craftName        = inventory.crafting.Name[i];
+            int    craftStack       = inventory.crafting.Stack[i];
+            int    craftStackMax    = inventory.crafting.StackMax[i];
+            int    craftDurability  = inventory.crafting.Durability[i];
+            string craftData        = inventory.crafting.Data[i];
+            
+            if (inventory.addItem(craftName, craftStack, craftStackMax, craftDurability, craftData) < 0) 
+                continue;
+            
+            inventory.crafting.Name[i]  = "";
+            inventory.crafting.State[i] = false;
+            
+            inventory.crafting.slot_image[i].texture = tickUpdate.items[0].inventoryImage.GetTexture("_MainTex");
+            inventory.crafting.slot_count[i].text    = "";
+        }
+        
+        inventory.crafting.crafting_result.SetActive(false);
+        inventory.crafting.result_image.texture = tickUpdate.items[0].inventoryImage.GetTexture("_MainTex");
+        
+        return;
+	}
+	
+	
+	
+	
+	
+	
+	public int findInventoryItem(string name) {
+        
+        for (int i=0; i < tickUpdate.items.Length; i++) {
+            if (tickUpdate.items[i].name != name) 
+                continue;
+            
+            return i;
+        }
+        
+        return -1;
+    }
+	
+	
+	
+	
+	
+	public void setLastMouseOverInventorySlot(int index) {
+        grabbedCurrentHoverSlot = index;
+        grabbedCurrentHoverArea = 0;
+    }
+	
+	
+	public void setLastMouseOverCraftingSlot(int index) {
+        grabbedCurrentHoverSlot = index;
+        grabbedCurrentHoverArea = 1;
+    }
 	
 	
 	

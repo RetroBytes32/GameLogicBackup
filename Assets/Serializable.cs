@@ -97,10 +97,11 @@ public class WorldData {
 	public bool doWeatherCycle;
 	
 	// Generation
-	public bool addWorldDecorations;
-	public bool addWorldEntities;
-    public bool generateFlatWorld;
-    
+	public bool  addWorldDecorations;
+	public bool  addWorldEntities;
+    public bool  generateFlatWorld;
+    public float waterTableHeight;
+	
 	public int TickRate;
 	public int TickCounter; // World up time
 	
@@ -186,7 +187,6 @@ public class ChunkData {
     
     // Emotional state
     public int[] love;
-	public int[] fear;
 	public int[] stress;
 	public int[] hunger;
 	
@@ -309,7 +309,6 @@ public class ChunkData {
         
         // Emotional state
         love                    = new int[entityCount];
-        fear                    = new int[entityCount];
         stress                  = new int[entityCount];
         hunger                  = new int[entityCount];
         

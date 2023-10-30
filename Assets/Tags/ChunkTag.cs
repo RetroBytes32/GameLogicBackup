@@ -22,7 +22,7 @@ public class ChunkTag : MonoBehaviour {
 	
 	public void update_mesh() {
         
-        Vector3[] vertex_array = new Vector3[ vertex_grid.Length ];
+        Vector3[] vertex_array = new Vector3[ 101 * 101 ];
         
         int index=0;
         for (int z=0; z <= 100; z++) {
@@ -41,8 +41,8 @@ public class ChunkTag : MonoBehaviour {
         
         // Upload new mesh data
         
-        Mesh mesh_base = transform.gameObject.GetComponent<MeshFilter>().mesh;
-        MeshCollider coll_base = transform.gameObject.GetComponent<MeshCollider>();
+        Mesh mesh_base = transform.GetChild(0).GetComponent<MeshFilter>().mesh;
+        MeshCollider coll_base = transform.GetChild(0).GetComponent<MeshCollider>();
         
         //mesh_base.Clear();
         mesh_base.vertices  = vertex_array;
@@ -59,7 +59,7 @@ public class ChunkTag : MonoBehaviour {
 	
 	public void update_color() {
         
-        Color[] color_array  = new Color[((101) * (101))];
+        Color[] color_array  = new Color[101 * 101];
         
         int index=0;
         for (int z=0; z <= 100; z++) {
@@ -75,7 +75,7 @@ public class ChunkTag : MonoBehaviour {
         }
         
         // Upload new mesh color data
-        Mesh mesh_base = transform.gameObject.GetComponent<MeshFilter>().mesh;
+        Mesh mesh_base = transform.GetChild(0).gameObject.GetComponent<MeshFilter>().mesh;
         
         mesh_base.colors = color_array;
         

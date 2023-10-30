@@ -76,7 +76,6 @@ public class ActorTag : MonoBehaviour {
 	[Space(3)]
     
 	public int love    = 0;
-	public int fear    = 0;
 	public int stress  = 0;
 	public int hunger  = 0;
 	
@@ -234,9 +233,6 @@ public class ActorTag : MonoBehaviour {
             if (love >  0)   love --;
             if (love < -0)   love ++;
             
-            if (fear >  0)   fear --;
-            if (fear < -0)   fear ++;
-            
             if (stress >  0) stress --;
             if (stress < -0) stress ++;
             
@@ -318,7 +314,7 @@ public class ActorTag : MonoBehaviour {
         //
         // Check attackable entities
         
-        if (AttackEntities.Length > 0) {
+        if ((AttackEntities.Length > 0) & (hunger > 0)) {
             
             for (int i=0; i < AttackEntities.Length; i++) {
                 
@@ -340,8 +336,7 @@ public class ActorTag : MonoBehaviour {
                 
                 if (AI_run_from_nearest_entity_type( FleeFromEntities[i] )) {
                     
-                    if (fear   < 40) fear   = 40;
-                    if (stress < 80) stress = 80;
+                    if (stress < 100) stress = 100;
                     
                     break;
                 }
@@ -369,7 +364,11 @@ public class ActorTag : MonoBehaviour {
         directionChangeCoolDownTimer++;
         if (directionChangeCoolDownTimer > directionChangeCoolDown) {
             
-            if (Random.Range(0f, 1f) < chanceToChangeDirection)  {
+            if (entityTag.isWalking)
+                if (Random.Range(0, 10) > 3) 
+                    return;
+            
+            if (Random.Range(0f, 1f) < chanceToChangeDirection) {
                 directionChangeCoolDownTimer=0;
                 
                 if (entityTag.doWalkSideways) {
@@ -466,6 +465,7 @@ public class ActorTag : MonoBehaviour {
         
         if (!Physics.Raycast(ray_obj, out hit_obj, avoidanceDistance, groundLayerMask) ) {
             isAvoiding = false;
+            Debug.DrawRay(from, this.transform.forward * avoidanceDistance, Color.white, 0.1f);
             return false;
         }
         
@@ -478,7 +478,16 @@ public class ActorTag : MonoBehaviour {
             
         }
         
-        Debug.DrawRay(from, this.transform.forward * 2f, Color.yellow, 1);
+        for (int i=0; i < 5; i++) {
+            Vector3 debugRayFrom = this.transform.position + (this.transform.forward * (avoidanceDistance / i));
+            Vector3 debugRayTo   = this.transform.position + (this.transform.forward * (avoidanceDistance / i));
+            
+            debugRayTo.y += 3;
+            
+            Debug.DrawLine(debugRayFrom, debugRayTo, Color.red, 3f);
+            Debug.DrawLine(debugRayFrom, debugRayTo, Color.red, 3f);
+        }
+        
         
         if (AI_change_direction()) 
             isAvoiding = true;
@@ -825,7 +834,6 @@ public class ActorTag : MonoBehaviour {
                         
                         targetEntityTag.Health -= entityTag.AttackDamage;
                         
-                        if (targetActorTag.fear   < 40)  targetActorTag.fear   = 40;
                         if (targetActorTag.stress < 100) targetActorTag.stress = 100;
                         
                         //
@@ -834,7 +842,7 @@ public class ActorTag : MonoBehaviour {
                         if (targetEntityTag.Health <= 0) {
                             
                             //
-                            // Consume target entity
+                            // Consume target entity item drop
                             if (targetActorTag.DropOnDeath.Length > 0) {
                                 
                                 int randomDrop = Random.Range(0, targetActorTag.DropOnDeath.Length);
@@ -842,6 +850,10 @@ public class ActorTag : MonoBehaviour {
                                 
                                 GameObject consumable = Instantiate( Resources.Load( itemName )) as GameObject;
                                 consumable.name = itemName;
+                                
+                                LayerMask defaultLayer = LayerMask.GetMask("Default");
+                                consumable.layer = defaultLayer;
+                                consumable.transform.GetChild(0).gameObject.layer = defaultLayer;
                                 
                                 // Place the item in the actors mouth
                                 consumable.transform.parent = transform.GetChild(1).transform.GetChild(1).transform;
@@ -864,7 +876,7 @@ public class ActorTag : MonoBehaviour {
                                 
                                 targetActorTag.isDying = true;
                                 
-                                hunger -= 80;
+                                hunger -= 100;
                             }
                             
                         }
@@ -894,7 +906,6 @@ public class ActorTag : MonoBehaviour {
             if (isInPain) {
                 isInPain = false;
                 
-                if (fear   < 10) fear   = 10;
                 if (stress < 40) stress = 40;
                 
                 AI_change_direction();

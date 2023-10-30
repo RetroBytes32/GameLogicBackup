@@ -33,4 +33,12 @@ public class Crafting : MonoBehaviour {
 	public RawImage     result_image;
 	public Text         result_count;
 	
+	public bool         result_state = false;
+	
+	public string       result_name;
+	public int          result_stack;
+	public int          result_stackMax;
+	public int          result_durability;
+	public string       result_data;
+	
 }
